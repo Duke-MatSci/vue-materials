@@ -1,17 +1,28 @@
-import mountTemplate from 'test/utils/mountTemplate'
-import MdList from './MdList.vue'
+import { mount } from "@vue/test-utils"
+import MdList from "./MdList.vue"
 
-test('should render the list', async () => {
-  const template = '<md-list>Lorem ipsum</md-list>'
-  const wrapper = await mountTemplate(MdList, template)
+describe("MdList", () => {
+	test("should render the list", () => {
+		const wrapper = mount(MdList, {
+			slots: {
+				default: "Lorem ipsum",
+			},
+		})
 
-  expect(wrapper.hasClass('md-list')).toBe(true)
-  expect(wrapper.text()).toBe('Lorem ipsum')
-})
+		expect(wrapper.classes()).toContain("md-list")
+		expect(wrapper.text()).toBe("Lorem ipsum")
+	})
 
-test('should render the theme class', async () => {
-  const template = '<md-list md-theme="alt">Lorem ipsum</md-list>'
-  const wrapper = await mountTemplate(MdList, template)
+	test("should render the theme class", () => {
+		const wrapper = mount(MdList, {
+			props: {
+				mdTheme: "alt",
+			},
+			slots: {
+				default: "Lorem ipsum",
+			},
+		})
 
-  expect(wrapper.hasClass('md-theme-alt')).toBe(true)
+		expect(wrapper.classes()).toContain("md-theme-alt")
+	})
 })

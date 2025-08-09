@@ -1,10 +1,15 @@
-import mountTemplate from 'test/utils/mountTemplate'
-import MdListItem from './MdListItem.vue'
+import { mount } from "@vue/test-utils"
+import MdListItem from "./MdListItem.vue"
 
-test('should render the list item', async () => {
-  const template = '<md-list-item>Lorem ipsum</md-list-item>'
-  const wrapper = await mountTemplate(MdListItem, template)
+describe("MdListItem", () => {
+	test("should render the list item", () => {
+		const wrapper = mount(MdListItem, {
+			slots: {
+				default: "Lorem ipsum",
+			},
+		})
 
-  expect(wrapper.hasClass('md-list-item')).toBe(true)
-  expect(wrapper.text().trim()).toBe('Lorem ipsum')
+		expect(wrapper.classes()).toContain("md-list-item")
+		expect(wrapper.text().trim()).toBe("Lorem ipsum")
+	})
 })
