@@ -1,7 +1,7 @@
 {
 	"name": "@duke-matsci/vue-materials",
 	"private": false,
-	"version": "0.0.13",
+	"version": "0.0.18",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -30,12 +30,12 @@
 		"src/index.js",
 		"src/material.js"
 	],
-	"main": "./dist/vue3-material.umd.cjs",
-	"module": "./dist/vue3-material.js",
+	"main": "./dist/vue-materials.umd.cjs",
+	"module": "./dist/vue-materials.js",
 	"exports": {
 		".": {
-			"import": "./dist/vue3-material.js",
-			"require": "./dist/vue3-material.umd.cjs"
+			"import": "./dist/vue-materials.js",
+			"require": "./dist/vue-materials.umd.cjs"
 		},
 		"./dist/style.css": {
 			"import": "./dist/style.css",
@@ -65,7 +65,8 @@
 	"scripts": {
 		"prebuild": "npm version patch --no-git-tag-version",
 		"dev": "vite",
-		"build": "vite build",
+		"build": "vite build && npm run copy-theme",
+		"copy-theme": "mkdir -p dist/theme && cp -r src/theme/* dist/theme/ && cp -r src/css/* dist/theme/",
 		"preview": "vite preview"
 	},
 	"dependencies": {

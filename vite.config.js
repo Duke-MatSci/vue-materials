@@ -14,80 +14,69 @@
 //   },
 //   plugins: [
 //     vuePlugin(),
-    
+
 //   ],
- 
+
 //   build: {
 //     minify: true,
 // 		target: 'esnext'
 //   },
-  
+
 // }))
 
-import path from 'node:path'
-import { defineConfig } from 'vite'
-import vuePlugin from '@vitejs/plugin-vue'
-import copy from 'rollup-plugin-copy'
+import path from "node:path"
+import { defineConfig } from "vite"
+import vuePlugin from "@vitejs/plugin-vue"
 
-const base = '/'
+const base = "/"
 
 export default defineConfig({
-  base,
-  plugins: [
-    vuePlugin(),
-  ],
+	base,
+	plugins: [vuePlugin()],
 	resolve: {
-    alias: {
-      "@": path.resolve(__dirname, 'src'),
-      "~": path.resolve(__dirname, 'src'),
-			"@localconfig": path.resolve(__dirname, 'src'),
-    }
-  },
-  build: {
-    lib: {
-      // the entry file that is loaded whenever someone imports
-      // your plugin in their app
-      entry: path.resolve(__dirname, 'src/index.js'),
+		alias: {
+			"@": path.resolve(__dirname, "src"),
+			"~": path.resolve(__dirname, "src"),
+			"@localconfig": path.resolve(__dirname, "src"),
+		},
+	},
+	build: {
+		lib: {
+			// the entry file that is loaded whenever someone imports
+			// your plugin in their app
+			entry: path.resolve(__dirname, "src/index.js"),
 
-            // the exposed global variable
-      // is required when formats includes 'umd' or 'iife'
-      name: 'VueMaterial',
+			// the exposed global variable
+			// is required when formats includes 'umd' or 'iife'
+			name: "VueMaterials",
 
-      // the proper extensions will be added, ie:
-         // name.js (es module)
-         // name.umd.cjs) (common js module)
-      // default fileName is the name option of package.json
-      fileName: 'vue3-material'
-    },
-    rollupOptions: {
-
-      // make sure to externalize deps that shouldn't be bundled
-      // into your library
-      external: ['vue'],
-      output: {
-        // Provide global variables to use in the UMD build
-        // for externalized deps
-        globals: {
-          vue: 'Vue'
-        },
-        // preserveModules: true,
-        dir: 'dist'
-      },
-      plugins: [
-        copy({
-          targets: [
-            { src: 'src/css/default.css', dest: 'dist/theme' }
-          ]
-        })
-      ]
-      // plugins: [
-      //   multi({
-      //     include: ['src/components/**/*.js'],
-      //   }),
-      // ]
-    },
-    outDir: 'dist'
-  }
+			// the proper extensions will be added, ie:
+			// name.js (es module)
+			// name.umd.cjs) (common js module)
+			// default fileName is the name option of package.json
+			fileName: "vue-materials",
+		},
+		rollupOptions: {
+			// make sure to externalize deps that shouldn't be bundled
+			// into your library
+			external: ["vue"],
+			output: {
+				// Provide global variables to use in the UMD build
+				// for externalized deps
+				globals: {
+					vue: "Vue",
+				},
+				// preserveModules: true,
+				dir: "dist",
+			},
+			// plugins: [
+			//   multi({
+			//     include: ['src/components/**/*.js'],
+			//   }),
+			// ]
+		},
+		outDir: "dist",
+	},
 })
 
 // import { resolve } from 'path'
