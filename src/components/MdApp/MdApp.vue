@@ -133,7 +133,7 @@ export default {
 		})
 
 		const staticClass = {}
-		if (data.staticClass) {
+		if (data && data.staticClass) {
 			data.staticClass.split(/\s+/).forEach((name) => {
 				if (name.length === 0) return
 				staticClass[name] = true
@@ -144,8 +144,11 @@ export default {
 			appComponent,
 			{
 				...props,
-				class: { ...staticClass, ...data.class },
-				style: { ...data.staticStyle, ...data.style },
+				class: { ...staticClass, ...(data && data.class ? data.class : {}) },
+				style: {
+					...(data && data.staticStyle ? data.staticStyle : {}),
+					...(data && data.style ? data.style : {}),
+				},
 			},
 			slots
 		)

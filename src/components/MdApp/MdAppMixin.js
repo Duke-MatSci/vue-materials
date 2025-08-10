@@ -140,6 +140,16 @@ export default {
 			this.MdApp.toolbar.height = height
 		},
 		getToolbarConstrants($event) {
+			if (!this.MdApp.toolbar.element) {
+				return {
+					toolbarHeight: 0,
+					safeAmount: 10,
+					threshold: 10,
+					scrollTop: $event.target.scrollTop,
+					initialHeight: 0,
+				}
+			}
+
 			const toolbarHeight = this.MdApp.toolbar.element.offsetHeight
 			const safeAmount = 10
 			const threshold = toolbarHeight + safeAmount
@@ -171,6 +181,7 @@ export default {
 			let { scrollTop, initialHeight } = this.getToolbarConstrants($event)
 			const toolbar = this.MdApp.toolbar.element
 			const firstRow = toolbar.querySelector(".md-toolbar-row:first-child")
+			if (!toolbar) return
 			const firstRowHeight = firstRow.offsetHeight
 			const scrollAmount = initialHeight - scrollTop
 			const shouldKeepFlexible = scrollTop < initialHeight - firstRowHeight
@@ -229,6 +240,7 @@ export default {
 			const toolbar = this.MdApp.toolbar.element
 			const firstRow = toolbar.querySelector(".md-toolbar-row:first-child")
 			const firstRowHeight = firstRow.offsetHeight
+			if (!toolbar) return
 
 			this.setToolbarTimer(scrollTop)
 			this.setToolbarMarginAndHeight(scrollTop - firstRowHeight, toolbarHeight)
@@ -247,6 +259,7 @@ export default {
 			const toolbar = this.MdApp.toolbar.element
 			const firstRow = toolbar.querySelector(".md-toolbar-row:first-child")
 			const firstRowHeight = firstRow.offsetHeight
+			if (!toolbar) return
 			const newHeight =
 				initialHeight -
 				scrollTop -
