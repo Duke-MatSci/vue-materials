@@ -100,6 +100,18 @@ export default {
 			staticClass += " " + data.staticClass
 		}
 
+		// Prepare slots for Vue 3
+		const componentSlots = {}
+		if (slots.default) {
+			componentSlots.default = () => slots.default()
+		}
+
+		// Handle scoped slots for expandable items
+		const scopedSlots = resolveScopedSlot(props, slots)
+		if (scopedSlots) {
+			Object.assign(componentSlots, scopedSlots)
+		}
+
 		return h(
 			"li",
 			{
@@ -113,12 +125,11 @@ export default {
 					listComponent,
 					{
 						...props,
-						scopedSlots: resolveScopedSlot(props, slots),
 						class: "md-list-item-container md-button-clean",
 						onClick: listeners?.click,
 						on: listeners,
 					},
-					slots.default ? slots.default() : []
+					componentSlots
 				),
 			]
 		)

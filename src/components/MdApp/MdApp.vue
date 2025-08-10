@@ -10,23 +10,19 @@ function normilizeTagName(tagName) {
 	return tagName.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()
 }
 
-function isValidChild(componentOptions) {
-	return (
-		componentOptions &&
-		componentTypes.includes(normilizeTagName(componentOptions.tag))
-	)
+function isValidChild(child) {
+	if (!child || !child.type) return false
+	const tag = child.type.name || child.type.__name || ""
+	return componentTypes.includes(normilizeTagName(tag))
 }
 
-function isRightDrawer(propsData) {
-	if (!propsData) return false
-	return propsData.mdRight === "" || !!propsData.mdRight
+function isRightDrawer(props) {
+	if (!props) return false
+	return props.mdRight === "" || !!props.mdRight
 }
 
-function shouldRenderSlot(data, componentOptions) {
-	return (
-		(data && componentTypes.includes(data.slot)) ||
-		isValidChild(componentOptions)
-	)
+function shouldRenderSlot(data, child) {
+	return (data && componentTypes.includes(data.slot)) || isValidChild(child)
 }
 
 function generateAttrKeys(attrs) {
@@ -45,20 +41,20 @@ function buildSlots(
 	createElement
 ) {
 	let slots = []
-
 	let hasDrawer = false
 
 	if (children) {
 		children.forEach((child) => {
-			const data = child.data
-			const componentOptions = child.componentOptions
+			const data = child.data || {}
+			const props = child.props || {}
 
-			if (shouldRenderSlot(data, componentOptions)) {
-				const slotName = data.slot || normilizeTagName(componentOptions.tag)
+			if (shouldRenderSlot(data, child)) {
+				const slotName = data.slot || normilizeTagName(child.type?.name || "")
+				child.data = child.data || {}
 				child.data.slot = slotName
 
 				if (slotName === "md-app-drawer") {
-					const isRight = isRightDrawer(componentOptions.propsData)
+					const isRight = isRightDrawer(props)
 
 					if (hasDrawer) {
 						console.warn(
@@ -69,20 +65,17 @@ function buildSlots(
 
 					hasDrawer = true
 					child.data.slot += `-${isRight ? "right" : "left"}`
-					child.key = generateAttrKeys(data.attrs)
+					child.key = generateAttrKeys(data.attrs || {})
 
 					if (isRight) {
 						const drawerRightPrevious = h(MdDrawerRightPrevious, {
-							props: { ...child.data.attrs },
+							...props,
 						})
+						drawerRightPrevious.data = drawerRightPrevious.data || {}
 						drawerRightPrevious.data.slot = "md-app-drawer-right-previous"
 						slots.push(drawerRightPrevious)
 					}
 				}
-
-				child.data.provide = options.Ctor.options.provide
-				child.context = context
-				child.functionalContext = functionalContext
 
 				slots.push(child)
 			}
@@ -95,7 +88,7 @@ function buildSlots(
 
 function getDrawers(children) {
 	const drawerVnodes = children.filter((child) => {
-		const tag = child.data.slot || normilizeTagName(child.componentOptions.tag)
+		const tag = child.data?.slot || normilizeTagName(child.type?.name || "")
 		return (
 			["md-app-drawer", "md-app-drawer-right", "md-app-drawer-left"].indexOf(
 				tag
@@ -114,16 +107,22 @@ function hasInternalDrawer(attrs) {
 export default {
 	name: "MdApp",
 	functional: true,
-	render(createElement, { children, props, data }) {
+	render(props, { children, data }) {
 		let appComponent = MdAppSideDrawer
-		const { context, functionalContext, componentOptions } =
-			createElement(appComponent)
+
+		// Convert children to array if it's not already
+		const childrenArray = children
+			? Array.isArray(children)
+				? children
+				: [children]
+			: []
+
 		const slots = buildSlots(
-			children,
-			context,
-			functionalContext,
-			componentOptions,
-			createElement
+			childrenArray,
+			null, // context
+			null, // functionalContext
+			{ options: { provide: null } }, // componentOptions
+			h // createElement
 		)
 		const drawers = getDrawers(slots)
 
@@ -144,7 +143,7 @@ export default {
 		return h(
 			appComponent,
 			{
-				attrs: props,
+				...props,
 				class: { ...staticClass, ...data.class },
 				style: { ...data.staticStyle, ...data.style },
 			},
