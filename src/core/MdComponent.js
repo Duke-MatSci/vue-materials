@@ -1,17 +1,21 @@
-//import MdTheme from './MdTheme'
-import deepmerge from 'deepmerge'
+import MdTheme from "./MdTheme"
+import deepmerge from "deepmerge"
 
 export default function (newComponent) {
-  const defaults = {
-    props: {
-      mdTheme: 'md-theme-default'
-    },
-    computed: {
-      $mdActiveTheme () {
-        return 'md-theme-default'
-      }
-    }
-  }
+	const defaults = {
+		props: {
+			mdTheme: null,
+		},
+		computed: {
+			$mdActiveTheme() {
+				const { enabled, getThemeName, getAncestorTheme } = MdTheme
+				if (enabled && this.mdTheme !== false) {
+					return getThemeName(this.mdTheme || getAncestorTheme(this))
+				}
+				return null
+			},
+		},
+	}
 
-  return deepmerge(defaults, newComponent)
+	return deepmerge(defaults, newComponent)
 }

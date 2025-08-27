@@ -1,5 +1,8 @@
 // import MdAutocomplete from './MdAutocomplete'
-import MdApp from "./MdApp"
+import MdApp from "./MdApp/MdApp.vue"
+import MdAppToolbar from "./MdApp/MdAppToolbar.vue"
+import MdAppContent from "./MdApp/MdAppContent.vue"
+import MdAppDrawer from "./MdApp/MdAppDrawer.vue"
 import MdAvatar from "./MdAvatar"
 import MdBadge from "./MdBadge"
 import MdButton from "./MdButton"
@@ -38,6 +41,9 @@ import MdProgress from "./MdProgress"
 export {
 	// MdAutocomplete,
 	MdApp,
+	MdAppToolbar,
+	MdAppContent,
+	MdAppDrawer,
 	MdAvatar,
 	MdBadge,
 	MdButton,

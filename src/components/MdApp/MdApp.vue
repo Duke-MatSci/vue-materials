@@ -132,6 +132,7 @@ export default {
 			}
 		})
 
+		// Fix for Vue 3: Handle class merging properly
 		const staticClass = {}
 		if (data && data.staticClass) {
 			data.staticClass.split(/\s+/).forEach((name) => {
@@ -140,15 +141,24 @@ export default {
 			})
 		}
 
+		// Merge classes properly for Vue 3
+		const mergedClass = {
+			...staticClass,
+			...(data && data.class ? data.class : {}),
+		}
+
+		// Handle style merging for Vue 3
+		const mergedStyle = {
+			...(data && data.staticStyle ? data.staticStyle : {}),
+			...(data && data.style ? data.style : {}),
+		}
+
 		return h(
 			appComponent,
 			{
 				...props,
-				class: { ...staticClass, ...(data && data.class ? data.class : {}) },
-				style: {
-					...(data && data.staticStyle ? data.staticStyle : {}),
-					...(data && data.style ? data.style : {}),
-				},
+				class: mergedClass,
+				style: mergedStyle,
 			},
 			slots
 		)
