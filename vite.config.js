@@ -76,6 +76,7 @@ export default defineConfig({
 			// ]
 		},
 		outDir: "dist",
+		emptyOutDir: false, // Don't clean the dist directory by default
 	},
 })
 

@@ -1,7 +1,7 @@
 {
 	"name": "@duke-matsci/vue-materials",
 	"private": false,
-	"version": "0.0.35",
+	"version": "0.0.58",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -23,6 +23,8 @@
 	"files": [
 		"dist",
 		"dist/theme",
+		"dist/components",
+		"dist/base",
 		"src/base/",
 		"src/components/",
 		"src/core/",
@@ -60,12 +62,24 @@
 		"./dist/theme/engine.scss": {
 			"import": "./dist/theme/engine.scss",
 			"require": "./dist/theme/engine.scss"
+		},
+		"./dist/components": {
+			"import": "./dist/components/index.js",
+			"require": "./dist/components/index.umd.cjs"
+		},
+		"./dist/base": {
+			"import": "./dist/base/theme.scss",
+			"require": "./dist/base/theme.scss"
 		}
 	},
 	"scripts": {
 		"prebuild": "npm version patch --no-git-tag-version",
 		"dev": "vite",
-		"build": "vite build && npm run copy-theme",
+		"build": "node build/lib/index.js",
+		"build:main": "vite build",
+		"build:components": "node build/lib/components.js",
+		"build:themes": "node build/lib/themes.js",
+		"build:base": "node build/lib/copy-base.js",
 		"copy-theme": "mkdir -p dist/theme && cp -r src/theme/* dist/theme/ && cp -r src/css/* dist/theme/",
 		"preview": "vite preview"
 	},
