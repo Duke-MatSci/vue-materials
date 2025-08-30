@@ -76,7 +76,7 @@ export default {
       this.getSwipeElement.addEventListener('touchmove', this.handleTouchMove, false)
     }
   },
-  beforeUnmount () {
+  beforeDestroy () {
     if (this.mdSwipeable) {
       this.getSwipeElement.removeEventListener('touchstart', this.handleTouchStart, false)
       this.getSwipeElement.removeEventListener('touchend', this.handleTouchEnd, false)

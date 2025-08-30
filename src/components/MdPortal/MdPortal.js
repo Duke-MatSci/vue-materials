@@ -1,7 +1,9 @@
+import Vue from 'vue'
+import raf from 'raf'
+
 export default {
   name: 'MdPortal',
   abstract: true,
-	emits:['md-destroy','md-initial-parent'],
   props: {
     mdAttachToParent: Boolean,
     mdTarget: {
@@ -10,8 +12,8 @@ export default {
         if (HTMLElement && value && value instanceof HTMLElement) {
           return true
         }
-				console.log('The md-target-el prop is invalid. You should pass a valid HTMLElement.');
-        //Vue.util.warn('The md-target-el prop is invalid. You should pass a valid HTMLElement.', this)
+
+        Vue.util.warn('The md-target-el prop is invalid. You should pass a valid HTMLElement.', this)
 
         return false
       }
@@ -23,12 +25,26 @@ export default {
   }),
   computed: {
     transitionName () {
-			
-			return this.$attrs['transition-prefix'] ? this.$attrs['transition-prefix'] : 'v';
-      
+      const childrenComponent = this._vnode.componentOptions.children[0]
+
+      if (childrenComponent) {
+        const transition = childrenComponent.data.transition
+
+        if (transition) {
+          return transition.name
+        } else {
+          const transition = childrenComponent.componentOptions.propsData.name
+
+          if (transition) {
+            return transition
+          }
+        }
+      }
+
+      return 'v'
     },
     leaveClass () {
-      return this.transitionName + '-leave-from'
+      return this.transitionName + '-leave'
     },
     leaveActiveClass () {
       return this.transitionName + '-leave-active'
@@ -48,7 +64,6 @@ export default {
   },
   methods: {
     getTransitionDuration (el) {
-			
       const duration = window.getComputedStyle(el).transitionDuration
       const num = parseFloat(duration, 10)
       let unit = duration.match(/m?s/)
@@ -68,18 +83,13 @@ export default {
       return 0
     },
     killGhostElement (el) {
-			
       if (el.parentNode) {
-				
         this.changeParentEl(this.originalParentEl)
-				
         this.$options._parentElm = this.originalParentEl
-				
         el.parentNode.removeChild(el)
       }
     },
     initDestroy (manualCall) {
-			
       let el = this.$el
 
       if (manualCall && this.$el.nodeType === Node.COMMENT_NODE) {
@@ -99,7 +109,7 @@ export default {
       })
     },
     destroyElement (el) {
-      window.requestAnimationFrame(() => {
+      raf(() => {
         el.classList.remove(this.leaveClass)
         el.classList.remove(this.leaveActiveClass)
         el.classList.remove(this.leaveToClass)
@@ -112,34 +122,27 @@ export default {
     }
   },
   mounted () {
-		
     if (!this.originalParentEl) {
       this.originalParentEl = this.$el.parentNode
       this.$emit('md-initial-parent', this.$el.parentNode)
     }
-		
+
     if (this.mdAttachToParent && this.$el.parentNode.parentNode) {
       this.changeParentEl(this.$el.parentNode.parentNode)
     } else if (document) {
       this.changeParentEl(this.mdTarget || document.body)
     }
   },
-  beforeUnmount () {
-		
+  beforeDestroy () {
     if (this.$el.classList) {
       this.initDestroy()
     } else {
-			var _this = this;
-			this.$nextTick(function(){
-				_this.killGhostElement(_this.$el)
-			});
-      
+      this.killGhostElement(this.$el)
     }
   },
-  render () {
-		
-    const defaultSlot = this.$slots.default();
-		
+  render (createElement) {
+    const defaultSlot = this.$slots.default
+
     if (defaultSlot && defaultSlot[0]) {
       return defaultSlot[0]
     }

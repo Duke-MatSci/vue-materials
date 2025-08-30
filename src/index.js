@@ -1,11 +1,14 @@
 import material from "./material"
-import * as MdComponents from "./components/index.js"
+import * as MdComponents from "./components"
 
 const VueMaterial = {
 	install(app) {
 		material(app)
+
 		Object.values(MdComponents).forEach((MdComponent) => {
-			app.component(MdComponent.name, MdComponent)
+			if (typeof MdComponent === "function") {
+				MdComponent(app)
+			}
 		})
 	},
 }
@@ -14,4 +17,4 @@ VueMaterial.version = "__VERSION__"
 
 export default VueMaterial
 
-export * from "./components/index.js"
+export * from "./components"

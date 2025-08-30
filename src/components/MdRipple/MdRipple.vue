@@ -1,176 +1,246 @@
 <template>
-  <div
-    :class="['md-ripple', rippleClasses]"
-    @touchstart.passive="event => mdEventTrigger && touchStartCheck(event)"
-    @touchmove.passive="event => mdEventTrigger && touchMoveCheck(event)"
-    @mousedown.passive="event => mdEventTrigger && startRipple(event)">
-    <slot />
-    <md-wave v-for="ripple in ripples" :key="ripple.uuid" :class="['md-ripple-wave', waveClasses]" :style="ripple.waveStyles" @md-end="clearWave(ripple.uuid)" v-if="!isDisabled" />
-  </div>
+	<div
+		class="md-ripple"
+		:class="rippleClasses"
+		@touchstart="onTouchStart"
+		@touchend="onTouchEnd"
+		@mousedown="onMouseDown"
+		@mouseup="onMouseUp"
+		@mouseleave="onMouseLeave"
+	>
+		<slot />
+		<transition-group name="md-ripple-wave" tag="div" class="md-ripple-waves">
+			<div
+				v-for="wave in waves"
+				:key="wave.id"
+				class="md-ripple-wave"
+				:style="wave.style"
+				@animationend="removeWave(wave.id)"
+			/>
+		</transition-group>
+	</div>
 </template>
 
 <script>
-  
-  import MdComponent from '@/core/MdComponent'
-  import uuid from '@/core/utils/MdUuid'
-  import MdWave from './MdWave.vue'
+import { ref, computed, watch } from "vue"
 
-  export default new MdComponent({
-    name: 'MdRipple',
-    components: {
-      MdWave
-    },
-    props: {
-      mdActive: null,
-      mdDisabled: Boolean,
-      mdCentered: Boolean,
-      mdEventTrigger: {
-        type: Boolean,
-        default: true
-      }
-    },
-    data: () => ({
-      ripples: [],
-      touchTimeout: null,
-      eventType: null
-    }),
-    computed: {
-      isDisabled () {
-        return  this.mdDisabled
-      },
-      rippleClasses () {
-        return {
-          'md-disabled': this.isDisabled
-        }
-      },
-      waveClasses () {
-        return {
-          'md-centered': this.mdCentered
-        }
-      }
-    },
-    watch: {
-      mdActive (active) {
-				
-        const isBoolean = typeof active === 'boolean'
-        const isEvent = active instanceof MouseEvent
+export default {
+	name: "MdRipple",
+	props: {
+		mdDisabled: {
+			type: Boolean,
+			default: false,
+		},
+		mdEventTrigger: {
+			type: Boolean,
+			default: true,
+		},
+		mdActive: {
+			type: [Boolean, Object],
+			default: false,
+		},
+	},
+	emits: ["update:mdActive"],
+	setup(props, { emit }) {
+		const waves = ref([])
+		const isActive = ref(false)
+		const waveId = ref(0)
 
-        if (isBoolean && this.mdCentered && active) {
-          this.startRipple({
-            type: 'mousedown'
-          })
-        } else if (isEvent) {
-          this.startRipple(active)
-        }
+		const rippleClasses = computed(() => ({
+			"md-ripple-disabled": props.mdDisabled,
+			"md-ripple-active": isActive.value,
+		}))
 
-        this.$emit('update:mdActive', false)
-      }
-    },
-    methods: {
-      touchMoveCheck () {
-        window.clearTimeout(this.touchTimeout)
-      },
-      touchStartCheck ($event) {
-        this.touchTimeout = window.setTimeout(() => {
-          this.startRipple($event)
-        }, 100)
-      },
-      startRipple ($event) {
-				
-        window.requestAnimationFrame(() => {
-          const { eventType, isDisabled, mdCentered } = this
+		const getRippleElement = () => {
+			return document.querySelector(".md-ripple")
+		}
 
-          if (!isDisabled && (!eventType || eventType === $event.type)) {
-            let size = this.getSize()
-            let position = null
+		const getRippleRect = () => {
+			const element = getRippleElement()
+			if (!element) return null
 
-            if (mdCentered) {
-              position = this.getCenteredPosition(size)
-            } else {
-              position = this.getHitPosition($event, size)
-            }
+			const rect = element.getBoundingClientRect()
+			return {
+				width: rect.width,
+				height: rect.height,
+				left: rect.left,
+				top: rect.top,
+			}
+		}
 
-            this.eventType = $event.type
-            this.ripples.push({
-              waveStyles: this.applyStyles(position, size),
-              uuid: uuid()
-            })
-          }
-        })
-      },
-      applyStyles (position, size) {
-        size += 'px'
+		const getRippleSize = (rect) => {
+			const size = Math.max(rect.width, rect.height)
+			return size * 2
+		}
 
-        return {
-          ...position,
-          width: size,
-          height: size
-        }
-      },
-      clearWave (uuid) {
-        uuid ? this.ripples = this.ripples.filter(ripple => ripple.uuid !== uuid) : this.ripples = []
-      },
-      getSize () {
-        const { offsetWidth, offsetHeight } = this.$el
+		const getRipplePosition = (event, rect) => {
+			let x, y
 
-        return Math.round(Math.max(offsetWidth, offsetHeight))
-      },
-      getCenteredPosition (size) {
-        const halfSize = -size / 2 + 'px'
+			if (event.touches && event.touches.length) {
+				x = event.touches[0].clientX
+				y = event.touches[0].clientY
+			} else {
+				x = event.clientX
+				y = event.clientY
+			}
 
-        return {
-          'margin-top': halfSize,
-          'margin-left': halfSize
-        }
-      },
-      getHitPosition ($event, elementSize) {
-        const rect = this.$el.getBoundingClientRect()
-        let top = $event.pageY
-        let left = $event.pageX
+			return {
+				x: x - rect.left - rect.width / 2,
+				y: y - rect.top - rect.height / 2,
+			}
+		}
 
-        if ($event.type === 'touchstart') {
-          top = $event.changedTouches[0].pageY
-          left = $event.changedTouches[0].pageX
-        }
+		const createWave = (event) => {
+			if (props.mdDisabled) return
 
-        return {
-          top: top - rect.top - elementSize / 2 - document.documentElement.scrollTop + 'px',
-          left: left - rect.left - elementSize / 2 - document.documentElement.scrollLeft + 'px'
-        }
-      }
-    }
-  })
+			const rect = getRippleRect()
+			if (!rect) return
+
+			const size = getRippleSize(rect)
+			const position = getRipplePosition(event, rect)
+
+			const wave = {
+				id: waveId.value++,
+				style: {
+					width: `${size}px`,
+					height: `${size}px`,
+					left: `${position.x}px`,
+					top: `${position.y}px`,
+				},
+			}
+
+			waves.value.push(wave)
+			isActive.value = true
+			emit("update:mdActive", true)
+		}
+
+		const removeWave = (id) => {
+			const index = waves.value.findIndex((wave) => wave.id === id)
+			if (index > -1) {
+				waves.value.splice(index, 1)
+			}
+
+			if (waves.value.length === 0) {
+				isActive.value = false
+				emit("update:mdActive", false)
+			}
+		}
+
+		const onTouchStart = (event) => {
+			if (props.mdEventTrigger) {
+				createWave(event)
+			}
+		}
+
+		const onTouchEnd = () => {
+			// Touch events are handled by animationend
+		}
+
+		const onMouseDown = (event) => {
+			if (props.mdEventTrigger) {
+				createWave(event)
+			}
+		}
+
+		const onMouseUp = () => {
+			// Mouse events are handled by animationend
+		}
+
+		const onMouseLeave = () => {
+			// Mouse events are handled by animationend
+		}
+
+		// Watch for mdActive prop changes
+		watch(
+			() => props.mdActive,
+			(newValue) => {
+				if (newValue) {
+					isActive.value = true
+				}
+			},
+			{ immediate: true }
+		)
+
+		return {
+			waves,
+			isActive,
+			rippleClasses,
+			createWave,
+			removeWave,
+			onTouchStart,
+			onTouchEnd,
+			onMouseDown,
+			onMouseUp,
+			onMouseLeave,
+		}
+	},
+}
 </script>
 
 <style lang="scss">
-  @import "@/components/MdAnimation/variables";
+@import "../MdAnimation/variables";
 
-  .md-ripple {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    z-index: 9;
-    overflow: hidden;
-    /*-webkit-mask-image: radial-gradient(circle, #fff 100%, #000 100%);*/
-  }
+.md-ripple {
+	position: relative;
+	overflow: hidden;
+	display: block;
+	width: 100%;
+	height: 100%;
 
-  .md-ripple-wave {
-    position: absolute;
-    z-index: 1;
-    pointer-events: none;
-    background: currentColor;
-    border-radius: 50%;
-    opacity: 0.26;
-    transform: scale(0.2) translateZ(0);
+	&.md-ripple-disabled {
+		pointer-events: none;
+	}
 
-    &.md-centered {
-      animation-duration: 1.2s;
-      top: 50%;
-      left: 50%;
-    }
-    ~ *:not(.md-ripple-wave) {
-      position: relative;
-      z-index: 2;
-    }
-  }
+	&.md-ripple-active {
+		pointer-events: none;
+	}
+}
+
+.md-ripple-waves {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	pointer-events: none;
+}
+
+.md-ripple-wave {
+	position: absolute;
+	border-radius: 50%;
+	background-color: currentColor;
+	opacity: 0.3;
+	transform: scale(0);
+	animation: md-ripple-wave 0.6s ease-out;
+	pointer-events: none;
+}
+
+@keyframes md-ripple-wave {
+	0% {
+		transform: scale(0);
+		opacity: 0.3;
+	}
+	100% {
+		transform: scale(1);
+		opacity: 0;
+	}
+}
+
+.md-ripple-wave-enter-active {
+	transition: all 0.6s ease-out;
+}
+
+.md-ripple-wave-leave-active {
+	transition: all 0.6s ease-out;
+}
+
+.md-ripple-wave-enter-from {
+	transform: scale(0);
+	opacity: 0.3;
+}
+
+.md-ripple-wave-leave-to {
+	transform: scale(1);
+	opacity: 0;
+}
 </style>

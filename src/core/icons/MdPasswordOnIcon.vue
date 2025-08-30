@@ -8,7 +8,7 @@
 </template>
 
 <script>
-  import MdIcon from '@/components/MdIcon/MdIcon.vue'
+  import MdIcon from 'components/MdIcon/MdIcon'
 
   export default {
     name: 'MdPasswordOnIcon',

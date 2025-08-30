@@ -1,5 +1,3 @@
-@use "sass:map";
-
 /**
  * Theme any css property based on the current palette, accepting a themable
  * value that will give an contrasted
@@ -15,13 +13,14 @@
  * ---
  * @access public
  * ---
- * @param {color} $type —  The desired color based on material palette
- * @param {string} $type —  A valid hue
+ * @param {color} $type —  The desired color based on material palette
+ * @param {string} $type —  A valid hue
  */
 
 @function md-get-palette-color($color, $hue) {
-	@return map.get(map.get($md-palette, $color), $hue);
+  @return map-get(map-get($md-palette, $color), $hue);
 }
+
 
 /**
  * Get the current theme mode from the current theme
@@ -35,8 +34,9 @@
  */
 
 @function md-get-theme-mode() {
-	@return map.get($md-theme-palette, theme);
+  @return map-get($md-theme-palette, theme);
 }
+
 
 /**
  * Theme any css property based on the current palette, accepting a themable
@@ -53,26 +53,25 @@
  * ---
  * @access public
  * ---
- * @param {string} $type —  The themable value
+ * @param {string} $type —  The themable value
  */
 
 @function md-theme($type, $background: "") {
-	$color-theme: null;
+  $color-theme: null;
 
-	@if $type == "primary" or $type == "accent" {
-		@return md-get-color-by-type($type, null);
-	} @else {
-		$color-theme: map.get($md-theme-palette, theme);
+  @if $type == "primary" or $type == "accent" {
+    @return md-get-color-by-type($type, null);
+  } @else {
+    $color-theme: map-get($md-theme-palette, theme);
 
-		@if $background != "" {
-			$color-theme: md-pick-contrast(
-				md-get-color-by-type($background, $color-theme)
-			);
-		}
+    @if $background != "" {
+      $color-theme: md-pick-contrast(md-get-color-by-type($background, $color-theme));
+    }
 
-		@return md-get-color-by-theme($color-theme, $type);
-	}
+    @return md-get-color-by-theme($color-theme, $type);
+  }
 }
+
 
 /**
  * Get a color based on type by theme
@@ -84,15 +83,16 @@
  * ---
  * @access public
  * ---
- * @param {string} $color-theme —  The theme color | Accepts dark or light
- * @param {string} $type —  The color type
+ * @param {string} $color-theme —  The theme color | Accepts dark or light
+ * @param {string} $type —  The color type
  */
 
 @function md-get-color-by-theme($color-theme, $type) {
-	$theme: map.get($md-color-levels, $color-theme);
+  $theme: map-get($md-color-levels, $color-theme);
 
-	@return map.get($theme, $type);
+  @return map-get($theme, $type);
 }
+
 
 /**
  * Get a color based on type only
@@ -105,16 +105,16 @@
  * ---
  * @access public
  * ---
- * @param {string} $type —  The color type
- * @param {string} $theme —  The fallback theme
+ * @param {string} $type —  The color type
+ * @param {string} $theme —  The fallback theme
  */
 
 @function md-get-color-by-type($type, $theme) {
-	$newColor: map.get($md-theme-palette, $type);
+  $newColor: map-get($md-theme-palette, $type);
 
-	@if $newColor == null {
-		$newColor: md-get-color-by-theme($theme, $type);
-	}
+  @if $newColor == null {
+    $newColor: md-get-color-by-theme($theme, $type);
+  }
 
-	@return $newColor;
+  @return $newColor
 }

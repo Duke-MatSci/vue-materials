@@ -1,5 +1,17 @@
+<template>
+	<component
+		:is="appComponent"
+		v-bind="$attrs"
+		:class="mergedClass"
+		:style="mergedStyle"
+	>
+		<template v-for="(_, name) in $slots" #[name]="slotData">
+			<slot :name="name" v-bind="slotData" />
+		</template>
+	</component>
+</template>
+
 <script>
-import { h, resolveComponent } from "vue"
 import MdAppSideDrawer from "./MdAppSideDrawer.vue"
 import MdAppInternalDrawer from "./MdAppInternalDrawer.vue"
 import MdDrawerRightPrevious from "./MdDrawerRightPrevious.vue"
@@ -32,136 +44,55 @@ function generateAttrKeys(attrs) {
 	})
 }
 
-/* eslint-disable complexity */
-function buildSlots(
-	children,
-	context,
-	functionalContext,
-	options,
-	createElement
-) {
-	let slots = []
-	let hasDrawer = false
-
-	if (children) {
-		children.forEach((child) => {
-			const data = child.data || {}
-			const props = child.props || {}
-
-			if (shouldRenderSlot(data, child)) {
-				const slotName = data.slot || normilizeTagName(child.type?.name || "")
-				child.data = child.data || {}
-				child.data.slot = slotName
-
-				if (slotName === "md-app-drawer") {
-					const isRight = isRightDrawer(props)
-
-					if (hasDrawer) {
-						console.warn(
-							`There shouldn't be more than one drawer in a MdApp at one time.`
-						)
-						return
-					}
-
-					hasDrawer = true
-					child.data.slot += `-${isRight ? "right" : "left"}`
-					child.key = generateAttrKeys(data.attrs || {})
-
-					if (isRight) {
-						const drawerRightPrevious = h(MdDrawerRightPrevious, {
-							...props,
-						})
-						drawerRightPrevious.data = drawerRightPrevious.data || {}
-						drawerRightPrevious.data.slot = "md-app-drawer-right-previous"
-						slots.push(drawerRightPrevious)
-					}
-				}
-
-				slots.push(child)
-			}
-		})
-	}
-
-	return slots
-}
-/* eslint-enable complexity */
-
-function getDrawers(children) {
-	const drawerVnodes = children.filter((child) => {
-		const tag = child.data?.slot || normilizeTagName(child.type?.name || "")
-		return (
-			["md-app-drawer", "md-app-drawer-right", "md-app-drawer-left"].indexOf(
-				tag
-			) > -1
-		)
-	})
-	return drawerVnodes.length ? drawerVnodes : []
-}
-
 function hasInternalDrawer(attrs) {
 	const mdPermanent = attrs && attrs["md-permanent"]
-
 	return mdPermanent && (mdPermanent === "clipped" || mdPermanent === "card")
 }
 
 export default {
 	name: "MdApp",
-	functional: true,
-	render(props, { children, data }) {
-		let appComponent = MdAppSideDrawer
+	components: {
+		MdAppSideDrawer,
+		MdAppInternalDrawer,
+		MdDrawerRightPrevious,
+	},
+	computed: {
+		appComponent() {
+			// Check if any drawer has internal drawer attributes
+			const slots = this.$slots
+			let hasInternal = false
 
-		// Convert children to array if it's not already
-		const childrenArray = children
-			? Array.isArray(children)
-				? children
-				: [children]
-			: []
-
-		const slots = buildSlots(
-			childrenArray,
-			null, // context
-			null, // functionalContext
-			{ options: { provide: null } }, // componentOptions
-			h // createElement
-		)
-		const drawers = getDrawers(slots)
-
-		drawers.forEach((drawer) => {
-			if (drawer && hasInternalDrawer(drawer.data.attrs)) {
-				appComponent = MdAppInternalDrawer
+			// Check default slot for drawers
+			if (slots.default) {
+				const children = Array.isArray(slots.default())
+					? slots.default()
+					: [slots.default()]
+				children.forEach((child) => {
+					if (child && child.data && hasInternalDrawer(child.data.attrs)) {
+						hasInternal = true
+					}
+				})
 			}
-		})
 
-		// Fix for Vue 3: Handle class merging properly
-		const staticClass = {}
-		if (data && data.staticClass) {
-			data.staticClass.split(/\s+/).forEach((name) => {
-				if (name.length === 0) return
-				staticClass[name] = true
-			})
-		}
-
-		// Merge classes properly for Vue 3
-		const mergedClass = {
-			...staticClass,
-			...(data && data.class ? data.class : {}),
-		}
-
-		// Handle style merging for Vue 3
-		const mergedStyle = {
-			...(data && data.staticStyle ? data.staticStyle : {}),
-			...(data && data.style ? data.style : {}),
-		}
-
-		return h(
-			appComponent,
-			{
-				...props,
-				class: mergedClass,
-				style: mergedStyle,
-			},
-			slots
-		)
+			return hasInternal ? MdAppInternalDrawer : MdAppSideDrawer
+		},
+		mergedClass() {
+			const staticClass = {}
+			if (this.$attrs.class) {
+				if (typeof this.$attrs.class === "string") {
+					this.$attrs.class.split(/\s+/).forEach((name) => {
+						if (name.length === 0) return
+						staticClass[name] = true
+					})
+				} else {
+					return this.$attrs.class
+				}
+			}
+			return staticClass
+		},
+		mergedStyle() {
+			return this.$attrs.style || {}
+		},
 	},
 }
 </script>

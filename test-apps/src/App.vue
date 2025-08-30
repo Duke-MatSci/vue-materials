@@ -1,45 +1,57 @@
 <template>
 	<div>
-		<h2>MdApp Test</h2>
+		<h2>Vue Materials Test</h2>
 
-		<!-- Basic MdApp with reveal mode -->
-		<md-app md-mode="reveal">
-			<md-app-toolbar class="md-primary">
-				<md-button class="md-icon-button" @click="toggleDrawer">
-					<md-icon>menu</md-icon>
-				</md-button>
+		<!-- Test Button Component -->
+		<div style="margin-top: 20px">
+			<h4>Button Examples</h4>
+			<TestButton />
+		</div>
+
+		<!-- Commented out until components are migrated -->
+		<!--
+		<MdApp md-mode="reveal">
+			<MdAppToolbar class="md-primary">
+				<MdButton class="md-icon-button" @click="toggleDrawer">
+					<MdIcon>menu</MdIcon>
+				</MdButton>
 				<h2 class="md-title">App Title</h2>
-			</md-app-toolbar>
+			</MdAppToolbar>
 
-			<md-app-drawer :md-active="drawerActive">
-				<md-list>
-					<md-list-item @click="navigateTo('home')">
-						<md-icon>home</md-icon>
+			<MdAppDrawer :md-active="drawerActive">
+				<MdList>
+					<MdListItem @click="navigateTo('home')">
+						<MdIcon>home</MdIcon>
 						<span class="md-list-item-text">Home</span>
-					</md-list-item>
-					<md-list-item @click="navigateTo('profile')">
-						<md-icon>person</md-icon>
+					</MdListItem>
+					<MdListItem @click="navigateTo('profile')">
+						<MdIcon>person</MdIcon>
 						<span class="md-list-item-text">Profile</span>
-					</md-list-item>
-					<md-list-item @click="navigateTo('settings')">
-						<md-icon>settings</md-icon>
+					</MdListItem>
+					<MdListItem @click="navigateTo('settings')">
+						<MdIcon>settings</MdIcon>
 						<span class="md-list-item-text">Settings</span>
-					</md-list-item>
-				</md-list>
-			</md-app-drawer>
+					</MdListItem>
+				</MdList>
+			</MdAppDrawer>
 
-			<md-app-content>
+			<MdAppContent>
 				<h3>Current Page: {{ currentPage }}</h3>
 				<p>Your app content here. This is the main content area.</p>
 				<p>Click the menu button to open the navigation drawer.</p>
-			</md-app-content>
-		</md-app>
-	</div>
+			</MdAppContent>
+		</MdApp>
+		--></div>
 </template>
 
 <script>
+import TestButton from "./components/TestButton.vue"
+
 export default {
 	name: "MdAppTest",
+	components: {
+		TestButton,
+	},
 	data() {
 		return {
 			drawerActive: false,

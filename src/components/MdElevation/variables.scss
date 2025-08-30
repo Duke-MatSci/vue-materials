@@ -1,98 +1,143 @@
-$md-elevation-umbra-color: rgba(#000, .2);
-$md-elevation-penumbra-color: rgba(#000, .14);
-$md-elevation-ambient-color: rgba(#000, .12);
+$md-elevation-0: 0;
+$md-elevation-1: 1;
+$md-elevation-2: 3;
+$md-elevation-3: 6;
+$md-elevation-4: 8;
+$md-elevation-5: 12;
+$md-elevation-6: 16;
+$md-elevation-7: 24;
+$md-elevation-8: 32;
+$md-elevation-9: 40;
+$md-elevation-10: 48;
+$md-elevation-11: 56;
+$md-elevation-12: 64;
+$md-elevation-13: 72;
+$md-elevation-14: 80;
+$md-elevation-15: 88;
+$md-elevation-16: 96;
+$md-elevation-17: 104;
+$md-elevation-18: 112;
+$md-elevation-19: 120;
+$md-elevation-20: 128;
+$md-elevation-21: 136;
+$md-elevation-22: 144;
+$md-elevation-23: 152;
+$md-elevation-24: 160;
 
-$md-elevation-umbra: (
-  0: "0 0 0 0",
-  1: "0 2px 1px -1px",
-  2: "0 3px 1px -2px",
-  3: "0 3px 3px -2px",
-  4: "0 2px 4px -1px",
-  5: "0 3px 5px -1px",
-  6: "0 3px 5px -1px",
-  7: "0 4px 5px -2px",
-  8: "0 5px 5px -3px",
-  9: "0 5px 6px -3px",
-  10: "0 6px 6px -3px",
-  11: "0 6px 7px -4px",
-  12: "0 7px 8px -4px",
-  13: "0 7px 8px -4px",
-  14: "0 7px 9px -4px",
-  15: "0 8px 9px -5px",
-  16: "0 8px 10px -5px",
-  17: "0 8px 11px -5px",
-  18: "0 9px 11px -5px",
-  19: "0 9px 12px -6px",
-  20: "0 10px 13px -6px",
-  21: "0 10px 13px -6px",
-  22: "0 10px 14px -6px",
-  23: "0 11px 14px -7px",
-  24: "0 11px 15px -7px"
+$md-elevation-map: (
+	0: $md-elevation-0,
+	1: $md-elevation-1,
+	2: $md-elevation-2,
+	3: $md-elevation-3,
+	4: $md-elevation-4,
+	5: $md-elevation-5,
+	6: $md-elevation-6,
+	7: $md-elevation-7,
+	8: $md-elevation-8,
+	9: $md-elevation-9,
+	10: $md-elevation-10,
+	11: $md-elevation-11,
+	12: $md-elevation-12,
+	13: $md-elevation-13,
+	14: $md-elevation-14,
+	15: $md-elevation-15,
+	16: $md-elevation-16,
+	17: $md-elevation-17,
+	18: $md-elevation-18,
+	19: $md-elevation-19,
+	20: $md-elevation-20,
+	21: $md-elevation-21,
+	22: $md-elevation-22,
+	23: $md-elevation-23,
+	24: $md-elevation-24,
 );
 
-$md-elevation-penumbra: (
-  0: "0 0 0 0",
-  1: "0 1px 1px 0",
-  2: "0 2px 2px 0",
-  3: "0 3px 4px 0",
-  4: "0 4px 5px 0",
-  5: "0 5px 8px 0",
-  6: "0 6px 10px 0",
-  7: "0 7px 10px 1px",
-  8: "0 8px 10px 1px",
-  9: "0 9px 12px 1px",
-  10: "0 10px 14px 1px",
-  11: "0 11px 15px 1px",
-  12: "0 12px 17px 2px",
-  13: "0 13px 19px 2px",
-  14: "0 14px 21px 2px",
-  15: "0 15px 22px 2px",
-  16: "0 16px 24px 2px",
-  17: "0 17px 26px 2px",
-  18: "0 18px 28px 2px",
-  19: "0 19px 29px 2px",
-  20: "0 20px 31px 3px",
-  21: "0 21px 33px 3px",
-  22: "0 22px 35px 3px",
-  23: "0 23px 36px 3px",
-  24: "0 24px 38px 3px"
+$md-elevation-transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+
+$md-elevation-umbra-opacity: 0.2;
+$md-elevation-penumbra-opacity: 0.14;
+$md-elevation-ambient-opacity: 0.12;
+
+$md-elevation-umbra-map: (
+	0: 0px 0px 0px 0px,
+	1: 0px 2px 1px -1px,
+	2: 0px 3px 1px -2px,
+	3: 0px 3px 3px -2px,
+	4: 0px 2px 4px -1px,
+	5: 0px 3px 5px -1px,
+	6: 0px 3px 5px -1px,
+	7: 0px 4px 5px -2px,
+	8: 0px 5px 5px -3px,
+	9: 0px 5px 6px -3px,
+	10: 0px 6px 6px -3px,
+	11: 0px 6px 7px -4px,
+	12: 0px 7px 8px -4px,
+	13: 0px 7px 8px -4px,
+	14: 0px 7px 9px -4px,
+	15: 0px 8px 9px -5px,
+	16: 0px 8px 10px -5px,
+	17: 0px 8px 11px -5px,
+	18: 0px 9px 11px -5px,
+	19: 0px 9px 12px -6px,
+	20: 0px 10px 13px -6px,
+	21: 0px 10px 13px -6px,
+	22: 0px 10px 14px -6px,
+	23: 0px 11px 14px -7px,
+	24: 0px 11px 15px -7px,
 );
 
-$md-elevation-ambient: (
-  0: "0 0 0 0",
-  1: "0 1px 3px 0",
-  2: "0 1px 5px 0",
-  3: "0 1px 8px 0",
-  4: "0 1px 10px 0",
-  5: "0 1px 14px 0",
-  6: "0 1px 18px 0",
-  7: "0 2px 16px 1px",
-  8: "0 3px 14px 2px",
-  9: "0 3px 16px 2px",
-  10: "0 4px 18px 3px",
-  11: "0 4px 20px 3px",
-  12: "0 5px 22px 4px",
-  13: "0 5px 24px 4px",
-  14: "0 5px 26px 4px",
-  15: "0 6px 28px 5px",
-  16: "0 6px 30px 5px",
-  17: "0 6px 32px 5px",
-  18: "0 7px 34px 6px",
-  19: "0 7px 36px 6px",
-  20: "0 8px 38px 7px",
-  21: "0 8px 40px 7px",
-  22: "0 8px 42px 7px",
-  23: "0 9px 44px 8px",
-  24: "0 9px 46px 8px"
+$md-elevation-penumbra-map: (
+	0: 0px 0px 0px 0px,
+	1: 0px 1px 1px 0px,
+	2: 0px 1px 2px 0px,
+	3: 0px 1px 3px 0px,
+	4: 0px 1px 4px 0px,
+	5: 0px 1px 5px 0px,
+	6: 0px 1px 6px 0px,
+	7: 0px 1px 7px 0px,
+	8: 0px 1px 8px 0px,
+	9: 0px 1px 9px 0px,
+	10: 0px 1px 10px 0px,
+	11: 0px 1px 11px 0px,
+	12: 0px 1px 12px 0px,
+	13: 0px 1px 13px 0px,
+	14: 0px 1px 14px 0px,
+	15: 0px 1px 15px 0px,
+	16: 0px 1px 16px 0px,
+	17: 0px 1px 17px 0px,
+	18: 0px 1px 18px 0px,
+	19: 0px 1px 19px 0px,
+	20: 0px 1px 20px 0px,
+	21: 0px 1px 21px 0px,
+	22: 0px 1px 22px 0px,
+	23: 0px 1px 23px 0px,
+	24: 0px 1px 24px 0px,
 );
 
-
-/**
- * The elevation transition duration
- * ---
- * @access private
- * @type transition
- * @group transition
- */
-
-$md-elevation-transition-duration: .3s;
+$md-elevation-ambient-map: (
+	0: 0px 0px 0px 0px,
+	1: 0px 1px 3px 0px,
+	2: 0px 1px 5px 0px,
+	3: 0px 1px 8px 0px,
+	4: 0px 1px 10px 0px,
+	5: 0px 1px 14px 0px,
+	6: 0px 1px 18px 0px,
+	7: 0px 2px 22px 0px,
+	8: 0px 2px 26px 0px,
+	9: 0px 2px 30px 0px,
+	10: 0px 2px 34px 0px,
+	11: 0px 2px 38px 0px,
+	12: 0px 2px 42px 0px,
+	13: 0px 2px 46px 0px,
+	14: 0px 2px 50px 0px,
+	15: 0px 2px 54px 0px,
+	16: 0px 2px 58px 0px,
+	17: 0px 2px 62px 0px,
+	18: 0px 2px 66px 0px,
+	19: 0px 2px 70px 0px,
+	20: 0px 2px 74px 0px,
+	21: 0px 2px 78px 0px,
+	22: 0px 2px 82px 0px,
+	23: 0px 2px 86px 0px,
+	24: 0px 2px 90px 0px,
+);
