@@ -1,0 +1,13 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+- When migrating a component or component folder, do not alter or change styling, both scoped styling or a component .scss files. Migrate styling as is with no changes.
+- Vue 2 vue-materials source code is located at - `/Users/admin/tc/vue-material-old`. Use it each time I refer to old source code or vue 2 vue-materials
+- When migrating Preserved all functionality from Vue 2
+- When migrating Minimal code changes - only what's necessary for Vue 3 compatibility
+- When migrating Maintained component behavior and expected output
+- When migrating Kept mixins and utilities working
+- When migrating Maintains all functionality while only changing what's absolutely necessary for Vue 3 compatibility.

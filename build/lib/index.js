@@ -44,6 +44,7 @@ async function buildLibrary() {
 						dir: "dist",
 					},
 				},
+				cssCodeSplit: false, // Disable CSS code splitting
 			},
 		})
 
@@ -59,10 +60,10 @@ async function buildLibrary() {
 		await generateComponents()
 		console.log("✅ Individual components generated successfully")
 
-		// Copy base files
-		console.log("📁 Copying base files...")
+		// Copy base files and CSS
+		console.log("📁 Copying base files and CSS...")
 		await copyBaseFiles()
-		console.log("✅ Base files copied successfully")
+		console.log("✅ Base files and CSS copied successfully")
 
 		console.log("🎉 Vue Materials library built successfully! \\o/")
 	} catch (error) {

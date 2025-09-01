@@ -93,7 +93,7 @@ export default async function generateComponents() {
 							},
 						},
 					},
-					cssCodeSplit: true,
+					cssCodeSplit: false, // Disable CSS code splitting
 				},
 			})
 

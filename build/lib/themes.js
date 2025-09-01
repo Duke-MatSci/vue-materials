@@ -1,97 +1,62 @@
 import { resolve } from "path"
-import {
-	readdirSync,
-	statSync,
-	existsSync,
-	writeFileSync,
-	mkdirSync,
-	readFileSync,
-} from "fs"
+import { readdirSync, statSync, existsSync, copyFileSync, mkdirSync } from "fs"
 import { fileURLToPath } from "url"
 import { dirname } from "path"
-import sass from "sass"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 const rootDir = resolve(__dirname, "../..")
-const themeSrcDir = resolve(rootDir, "src/theme/prebuilt")
-const themeDistDir = resolve(rootDir, "dist/theme")
+const cssSrcDir = resolve(rootDir, "src/css")
+const cssDistDir = resolve(rootDir, "dist")
 
-console.log("🎨 Starting theme generation...")
-console.log("  Theme source dir:", themeSrcDir)
-console.log("  Theme dist dir:", themeDistDir)
+console.log("🎨 Starting CSS theme copying...")
+console.log("  CSS source dir:", cssSrcDir)
+console.log("  CSS dist dir:", cssDistDir)
 
-function getThemeFiles(source) {
-	console.log("  Checking for theme files in:", source)
+function copyCssFiles(source, destination) {
 	if (!existsSync(source)) {
-		console.log("  Source directory does not exist")
-		return []
-	}
-
-	const files = readdirSync(source).filter((file) => {
-		return (
-			!statSync(resolve(source, file)).isDirectory() && file.endsWith(".scss")
-		)
-	})
-	console.log("  Found theme files:", files)
-	return files
-}
-
-export default async function generateThemes() {
-	console.log("🎨 Generating themes...")
-
-	// Ensure theme dist directory exists
-	if (!existsSync(themeDistDir)) {
-		console.log("  Creating theme dist directory...")
-		mkdirSync(themeDistDir, { recursive: true })
-	}
-
-	const themeFiles = getThemeFiles(themeSrcDir)
-
-	if (themeFiles.length === 0) {
-		console.log("⚠️  No theme files found in src/theme/prebuilt")
+		console.log("  Source directory does not exist:", source)
 		return
 	}
 
-	console.log(`  Processing ${themeFiles.length} theme files...`)
+	// Copy all files and subdirectories recursively
+	function copyRecursive(src, dest) {
+		const items = readdirSync(src)
 
-	for (const theme of themeFiles) {
-		const themePath = resolve(themeSrcDir, theme)
-		const themeContents = readFileSync(themePath, "utf8")
-		const cssFileName = theme.replace(".scss", ".css")
-		const cssFilePath = resolve(themeDistDir, cssFileName)
+		for (const item of items) {
+			const srcPath = resolve(src, item)
+			const destPath = resolve(dest, item)
 
-		try {
-			const result = await sass.compileAsync(themePath, {
-				style: "compressed",
-				loadPaths: [themeSrcDir],
-			})
-
-			writeFileSync(cssFilePath, result.css, "utf8")
-			console.log(`  ✅ Generated ${cssFileName}`)
-		} catch (error) {
-			console.error(`  ❌ Failed to compile ${theme}:`, error.message)
+			if (statSync(srcPath).isDirectory()) {
+				// Create destination directory if it doesn't exist
+				if (!existsSync(destPath)) {
+					mkdirSync(destPath, { recursive: true })
+				}
+				// Recursively copy subdirectories
+				copyRecursive(srcPath, destPath)
+			} else {
+				// Copy files directly
+				try {
+					copyFileSync(srcPath, destPath)
+					console.log(`  ✅ Copied: ${item}`)
+				} catch (error) {
+					console.error(`  ❌ Failed to copy ${item}:`, error.message)
+				}
+			}
 		}
 	}
 
-	// Also copy SCSS theme files for source access
-	console.log("  Copying SCSS theme files...")
-	const allThemeFiles = getThemeFiles(resolve(rootDir, "src/theme"))
-	for (const theme of allThemeFiles) {
-		const srcPath = resolve(rootDir, "src/theme", theme)
-		const destPath = resolve(themeDistDir, theme)
+	copyRecursive(source, destination)
+}
 
-		try {
-			const content = readFileSync(srcPath, "utf8")
-			writeFileSync(destPath, content, "utf8")
-			console.log(`  ✅ Copied ${theme}`)
-		} catch (error) {
-			console.error(`  ❌ Failed to copy ${theme}:`, error.message)
-		}
-	}
+export default async function generateThemes() {
+	console.log("🎨 Copying CSS themes and files...")
 
-	console.log("✅ Theme generation completed")
+	// Copy all CSS files and subdirectories to dist
+	copyCssFiles(cssSrcDir, cssDistDir)
+
+	console.log("✅ CSS theme copying completed")
 }
 
 // If this script is run directly, execute the function

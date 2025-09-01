@@ -10,7 +10,6 @@ export default (name, options) => {
 					", "
 				)}.`
 			)
-
 			return false
 		},
 	}

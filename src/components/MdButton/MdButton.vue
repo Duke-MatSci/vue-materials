@@ -1,8 +1,14 @@
 <script>
-import { h, computed } from "vue"
+import { h, resolveComponent } from "vue"
+import MdComponent from "../../core/MdComponent"
+import MdFocused from "../../core/mixins/MdFocused/MdFocused"
+import MdRipple from "../../core/mixins/MdRipple/MdRipple"
+import MdRouterLink from "../../core/mixins/MdRouterLink/MdRouterLink"
+import MdRouterLinkProps from "../../core/utils/MdRouterLinkProps"
 
-export default {
+export default new MdComponent({
 	name: "MdButton",
+	mixins: [MdRipple, MdFocused, MdRouterLink],
 	props: {
 		href: String,
 		type: {
@@ -22,56 +28,149 @@ export default {
 		event: [String, Array],
 		exactActiveClass: String,
 	},
-	emits: ["click"],
-	setup(props, { slots, emit }) {
-		const tag = computed(() => {
-			if (props.href) {
+	emits: [
+		"click",
+		"touchstart",
+		"touchmove",
+		"mousedown",
+		"update:mdRippleActive",
+	],
+	data() {
+		return {
+			rippleActive: false,
+		}
+	},
+	computed: {
+		rippleWorks() {
+			return this.mdRipple && !this.disabled
+		},
+		isRouterLink() {
+			return this.$router && this.to
+		},
+		tag() {
+			if (this.href) {
 				return "a"
-			} else if (props.to) {
+			} else if (this.isRouterLink) {
 				return "router-link"
 			}
 			return "button"
-		})
-
-		const buttonType = computed(() => {
-			if (props.href || props.to) {
+		},
+		buttonType() {
+			if (this.href || this.to) {
 				return undefined
 			}
-			return props.type || "button"
-		})
-
-		const buttonClasses = computed(() => {
+			return this.type || "button"
+		},
+		buttonClasses() {
 			return [
 				"md-button",
+				this.$mdActiveTheme,
 				{
-					"md-ripple-off": !props.mdRipple,
+					"md-ripple-off": !this.mdRipple,
+					"md-focused": this.mdHasFocus,
 				},
 			]
-		})
+		},
+	},
+	watch: {
+		to: {
+			handler() {
+				if (this.isRouterLink) {
+					this.$options.props = MdRouterLinkProps(this, this.$options.props)
+				}
+			},
+			immediate: true,
+		},
+	},
+	methods: {
+		handleTouchStart(event) {
+			if (this.rippleWorks) {
+				this.rippleActive = event
+			}
+			// Emit the event for parent components to handle
+			this.$emit("touchstart", event)
+		},
+		handleTouchMove(event) {
+			if (this.rippleWorks) {
+				this.rippleActive = event
+			}
+			// Emit the event for parent components to handle
+			this.$emit("touchmove", event)
+		},
+		handleMouseDown(event) {
+			if (this.rippleWorks) {
+				this.rippleActive = event
+			}
+			// Emit the event for parent components to handle
+			this.$emit("mousedown", event)
+		},
+		handleRippleActiveUpdate(active) {
+			this.rippleActive = active
+			// Emit the update for parent components
+			this.$emit("update:mdRippleActive", active)
+		},
+	},
+	render() {
+		// Build the ripple content structure directly
+		const rippleContent = h("div", { class: "md-ripple" }, [
+			h(
+				"div",
+				{ class: "md-button-content" },
+				this.$slots.default ? this.$slots.default() : []
+			),
+			h("div"), // Empty div for ripple wave
+		])
 
-		const handleClick = (event) => {
-			emit("click", event)
+		// Build the ripple component with proper props
+		const rippleComponent = h(
+			"md-ripple",
+			{
+				mdDisabled: !this.mdRipple || this.disabled,
+				mdEventTrigger: false,
+				mdActive: this.rippleActive,
+				onUpdateMdActive: this.handleRippleActiveUpdate,
+			},
+			[rippleContent]
+		)
+
+		// Build button attributes - separate props from events
+		const buttonProps = {
+			class: this.buttonClasses,
+			href: this.href,
+			disabled: this.disabled,
+			type: this.buttonType,
 		}
 
-		return () => {
-			const buttonContent = h(
-				"div",
-				{ class: "md-ripple" },
-				slots.default ? slots.default() : []
-			)
+		// Build event handlers using Vue 3 event system
+		const buttonEvents = {
+			onTouchstart: this.handleTouchStart,
+			onTouchmove: this.handleTouchMove,
+			onMousedown: this.handleMouseDown,
+			onClick: (event) => this.$emit("click", event),
+		}
 
-			const buttonAttrs = {
-				class: buttonClasses.value,
-				href: props.href,
-				disabled: props.disabled,
-				type: buttonType.value,
-				onClick: handleClick,
+		// Add router-specific props if needed
+		if (this.isRouterLink) {
+			const exactActiveClass = this.$props.exactActiveClass
+			const activeClass = `${
+				this.$props.activeClass || this.$material.router.linkActiveClass
+			} md-active`
+
+			buttonProps.props = {
+				...this.$props,
+				exactActiveClass,
+				activeClass,
 			}
 
-			return h(tag.value, buttonAttrs, [buttonContent])
+			// Remove conflicting props for router-link
+			delete buttonProps.type
+			delete buttonProps.href
 		}
+
+		// Create the button element with proper Vue 3 h function structure
+		return h(this.tag, { ...buttonProps, ...buttonEvents }, [rippleComponent])
 	},
-}
+})
 </script>
 
 <style lang="scss">
@@ -117,8 +216,7 @@ $md-button-fab-size-mini: $md-button-icon-size;
 	user-select: none;
 	border-radius: $md-button-radius;
 	font-size: $md-button-font-size;
-	/*font-weight: 500;*/
-	text-shadow: var(--font-mboldfixer);
+	font-weight: 500;
 	text-transform: uppercase;
 
 	&:active {
@@ -268,7 +366,7 @@ $md-button-fab-size-mini: $md-button-icon-size;
 }
 
 .md-fab {
-	//@include md-elevation(6);
+	@include md-elevation(6);
 
 	width: $md-button-fab-size;
 	height: $md-button-fab-size;

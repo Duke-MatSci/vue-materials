@@ -1,150 +1,173 @@
-import Vue from 'vue'
-import raf from 'raf'
+import raf from "raf"
+import {
+	ref,
+	computed,
+	watch,
+	onMounted,
+	onBeforeUnmount,
+	nextTick,
+	getCurrentInstance,
+} from "vue"
 
 export default {
-  name: 'MdPortal',
-  abstract: true,
-  props: {
-    mdAttachToParent: Boolean,
-    mdTarget: {
-      type: null,
-      validator (value) {
-        if (HTMLElement && value && value instanceof HTMLElement) {
-          return true
-        }
+	name: "MdPortal",
+	abstract: true,
+	props: {
+		mdAttachToParent: Boolean,
+		mdTarget: {
+			type: null,
+			validator(value) {
+				if (HTMLElement && value && value instanceof HTMLElement) {
+					return true
+				}
 
-        Vue.util.warn('The md-target-el prop is invalid. You should pass a valid HTMLElement.', this)
+				console.warn(
+					"The md-target-el prop is invalid. You should pass a valid HTMLElement."
+				)
+				return false
+			},
+		},
+	},
+	setup(props, { emit, slots }) {
+		const instance = getCurrentInstance()
+		const leaveTimeout = ref(null)
+		const originalParentEl = ref(null)
+		const portalEl = ref(null)
 
-        return false
-      }
-    }
-  },
-  data: () => ({
-    leaveTimeout: null,
-    originalParentEl: null
-  }),
-  computed: {
-    transitionName () {
-      const childrenComponent = this._vnode.componentOptions.children[0]
+		const transitionName = computed(() => {
+			const childrenComponent = instance.vnode.componentOptions?.children?.[0]
 
-      if (childrenComponent) {
-        const transition = childrenComponent.data.transition
+			if (childrenComponent) {
+				const transition = childrenComponent.data?.transition
 
-        if (transition) {
-          return transition.name
-        } else {
-          const transition = childrenComponent.componentOptions.propsData.name
+				if (transition) {
+					return transition.name
+				} else {
+					const transition = childrenComponent.componentOptions?.propsData?.name
 
-          if (transition) {
-            return transition
-          }
-        }
-      }
+					if (transition) {
+						return transition
+					}
+				}
+			}
 
-      return 'v'
-    },
-    leaveClass () {
-      return this.transitionName + '-leave'
-    },
-    leaveActiveClass () {
-      return this.transitionName + '-leave-active'
-    },
-    leaveToClass () {
-      return this.transitionName + '-leave-to'
-    }
-  },
-  watch: {
-    mdTarget (newTarget, oldTarget) {
-      this.changeParentEl(newTarget)
+			return "v"
+		})
 
-      if (oldTarget) {
-        this.$forceUpdate()
-      }
-    }
-  },
-  methods: {
-    getTransitionDuration (el) {
-      const duration = window.getComputedStyle(el).transitionDuration
-      const num = parseFloat(duration, 10)
-      let unit = duration.match(/m?s/)
+		const leaveClass = computed(() => {
+			return transitionName.value + "-leave"
+		})
 
-      if (unit) {
-        unit = unit[0]
-      }
+		const leaveActiveClass = computed(() => {
+			return transitionName.value + "-leave-active"
+		})
 
-      if (unit === 's') {
-        return num * 1000
-      }
+		const leaveToClass = computed(() => {
+			return transitionName.value + "-leave-to"
+		})
 
-      if (unit === 'ms') {
-        return num
-      }
+		const getTransitionDuration = (el) => {
+			const duration = window.getComputedStyle(el).transitionDuration
+			const num = parseFloat(duration, 10)
+			let unit = duration.match(/m?s/)
 
-      return 0
-    },
-    killGhostElement (el) {
-      if (el.parentNode) {
-        this.changeParentEl(this.originalParentEl)
-        this.$options._parentElm = this.originalParentEl
-        el.parentNode.removeChild(el)
-      }
-    },
-    initDestroy (manualCall) {
-      let el = this.$el
+			if (unit) {
+				unit = unit[0]
+			}
 
-      if (manualCall && this.$el.nodeType === Node.COMMENT_NODE) {
-        el = this.$vnode.elm
-      }
+			if (unit === "s") {
+				return num * 1000
+			}
 
-      el.classList.add(this.leaveClass)
-      el.classList.add(this.leaveActiveClass)
+			if (unit === "ms") {
+				return num
+			}
 
-      this.$nextTick().then(() => {
-        el.classList.add(this.leaveToClass)
+			return 0
+		}
 
-        clearTimeout(this.leaveTimeout)
-        this.leaveTimeout = setTimeout(() => {
-          this.destroyElement(el)
-        }, this.getTransitionDuration(el))
-      })
-    },
-    destroyElement (el) {
-      raf(() => {
-        el.classList.remove(this.leaveClass)
-        el.classList.remove(this.leaveActiveClass)
-        el.classList.remove(this.leaveToClass)
-        this.$emit('md-destroy')
-        this.killGhostElement(el)
-      })
-    },
-    changeParentEl (newTarget) {
-      newTarget && newTarget.appendChild(this.$el)
-    }
-  },
-  mounted () {
-    if (!this.originalParentEl) {
-      this.originalParentEl = this.$el.parentNode
-      this.$emit('md-initial-parent', this.$el.parentNode)
-    }
+		const killGhostElement = (el) => {
+			if (el.parentNode) {
+				changeParentEl(originalParentEl.value)
+				instance.vnode.el = originalParentEl.value
+				el.parentNode.removeChild(el)
+			}
+		}
 
-    if (this.mdAttachToParent && this.$el.parentNode.parentNode) {
-      this.changeParentEl(this.$el.parentNode.parentNode)
-    } else if (document) {
-      this.changeParentEl(this.mdTarget || document.body)
-    }
-  },
-  beforeDestroy () {
-    if (this.$el.classList) {
-      this.initDestroy()
-    } else {
-      this.killGhostElement(this.$el)
-    }
-  },
-  render (createElement) {
-    const defaultSlot = this.$slots.default
+		const initDestroy = (manualCall) => {
+			let el = portalEl.value
 
-    if (defaultSlot && defaultSlot[0]) {
-      return defaultSlot[0]
-    }
-  }
+			if (manualCall && portalEl.value.nodeType === Node.COMMENT_NODE) {
+				el = instance.vnode.elm
+			}
+
+			el.classList.add(leaveClass.value)
+			el.classList.add(leaveActiveClass.value)
+
+			nextTick().then(() => {
+				el.classList.add(leaveToClass.value)
+
+				clearTimeout(leaveTimeout.value)
+				leaveTimeout.value = setTimeout(() => {
+					destroyElement(el)
+				}, getTransitionDuration(el))
+			})
+		}
+
+		const destroyElement = (el) => {
+			raf(() => {
+				el.classList.remove(leaveClass.value)
+				el.classList.remove(leaveActiveClass.value)
+				el.classList.remove(leaveToClass.value)
+				emit("md-destroy")
+				killGhostElement(el)
+			})
+		}
+
+		const changeParentEl = (newTarget) => {
+			newTarget && newTarget.appendChild(portalEl.value)
+		}
+
+		watch(
+			() => props.mdTarget,
+			(newTarget, oldTarget) => {
+				changeParentEl(newTarget)
+
+				if (oldTarget) {
+					instance.proxy.$forceUpdate()
+				}
+			}
+		)
+
+		onMounted(() => {
+			portalEl.value = instance.proxy.$el
+
+			if (!originalParentEl.value) {
+				originalParentEl.value = portalEl.value.parentNode
+				emit("md-initial-parent", portalEl.value.parentNode)
+			}
+
+			if (props.mdAttachToParent && portalEl.value.parentNode.parentNode) {
+				changeParentEl(portalEl.value.parentNode.parentNode)
+			} else if (document) {
+				changeParentEl(props.mdTarget || document.body)
+			}
+		})
+
+		onBeforeUnmount(() => {
+			if (portalEl.value?.classList) {
+				initDestroy()
+			} else {
+				killGhostElement(portalEl.value)
+			}
+		})
+
+		return () => {
+			const defaultSlot = slots.default
+
+			if (defaultSlot && defaultSlot[0]) {
+				return defaultSlot[0]
+			}
+		}
+	},
 }

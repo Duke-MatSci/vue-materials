@@ -1,10 +1,9 @@
-import { reactive, ref, computed, watch, onMounted } from "vue"
-import MdReactive from "../../utils/MdReactive"
+import MdReactive from "@/core/utils/MdReactive"
 
 let hasEvents = false
 let eventTarget = null
 let supportsPassiveEvent = false
-let MdFocused = reactive({
+let MdFocused = new MdReactive({
 	currentElement: null,
 })
 
@@ -73,26 +72,20 @@ function createEvents() {
 }
 
 export default {
-	setup() {
-		const mdHasFocus = ref(false)
-		const element = ref(null)
-
-		const focusedElement = computed(() => {
+	data: () => ({
+		mdHasFocus: false,
+	}),
+	computed: {
+		focusedElement() {
 			return MdFocused.currentElement
-		})
-
-		watch(focusedElement, (el) => {
-			mdHasFocus.value = el === element.value
-		})
-
-		onMounted(() => {
-			createEvents()
-		})
-
-		return {
-			mdHasFocus,
-			element,
-			focusedElement,
-		}
+		},
+	},
+	watch: {
+		focusedElement(el) {
+			this.mdHasFocus = el === this.$el
+		},
+	},
+	mounted() {
+		createEvents()
 	},
 }

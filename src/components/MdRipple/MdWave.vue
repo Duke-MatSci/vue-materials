@@ -1,38 +1,47 @@
 <template>
-	<div class="md-wave" :style="waveStyle" />
+	<transition name="md-ripple" @after-enter="end" appear>
+		<span v-if="animating" />
+	</transition>
 </template>
 
 <script>
 export default {
 	name: "MdWave",
+	data() {
+		return {
+			animating: false,
+		}
+	},
 	props: {
-		waveStyle: {
-			type: Object,
-			default: () => ({}),
+		waveClasses: null,
+		waveStyles: null,
+	},
+	mounted() {
+		this.animating = true
+	},
+	methods: {
+		end() {
+			this.animating = false
+			this.$emit("md-end")
 		},
 	},
 }
 </script>
 
-<style lang="scss">
-.md-wave {
-	position: absolute;
-	border-radius: 50%;
-	background-color: currentColor;
-	opacity: 0.3;
-	transform: scale(0);
-	animation: md-wave 0.6s ease-out;
-	pointer-events: none;
+<style lang="scss" scoped>
+@import "../../components/MdAnimation/variables";
+
+.md-ripple-enter-active {
+	transition: 0.8s $md-transition-stand-timing;
+	transition-property: opacity, transform;
+	will-change: opacity, transform;
+	&.md-centered {
+		transition-duration: 1.2s;
+	}
 }
 
-@keyframes md-wave {
-	0% {
-		transform: scale(0);
-		opacity: 0.3;
-	}
-	100% {
-		transform: scale(1);
-		opacity: 0;
-	}
+.md-ripple-enter {
+	opacity: 0.26;
+	transform: scale(0.26) translateZ(0);
 }
 </style>
