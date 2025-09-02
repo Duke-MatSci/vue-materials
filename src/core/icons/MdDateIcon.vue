@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import MdIcon from "@/components/MdIcon/MdIcon"
+import MdIcon from "@/components/MdIcon/MdIcon.vue"
 
 export default {
 	name: "MdDateIcon",
