@@ -8,9 +8,10 @@
 </template>
 
 <script>
-import { h } from "vue"
+import { h, getCurrentInstance } from "vue"
+import MdComponent from "@/core/MdComponent"
 
-export default {
+export default MdComponent({
 	name: "MdToolbar",
 	props: {
 		mdElevation: {
@@ -20,16 +21,24 @@ export default {
 	},
 	setup(props, { slots }) {
 		return () => {
+			// Get the component instance to access $mdActiveTheme
+			const instance = getCurrentInstance()
+			const themeClass = instance?.proxy?.$mdActiveTheme || null
+
 			return h(
 				"div",
 				{
-					class: ["md-toolbar", `md-elevation-${props.mdElevation}`],
+					class: [
+						"md-toolbar",
+						themeClass,
+						`md-elevation-${props.mdElevation}`,
+					],
 				},
 				slots.default ? slots.default() : []
 			)
 		}
 	},
-}
+})
 </script>
 
 <style lang="scss">

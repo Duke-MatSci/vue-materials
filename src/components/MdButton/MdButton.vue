@@ -6,7 +6,7 @@ import MdRipple from "../../core/mixins/MdRipple/MdRipple"
 import MdRouterLink from "../../core/mixins/MdRouterLink/MdRouterLink"
 import MdRouterLinkProps from "../../core/utils/MdRouterLinkProps"
 
-export default new MdComponent({
+export default MdComponent({
 	name: "MdButton",
 	mixins: [MdRipple, MdFocused, MdRouterLink],
 	props: {

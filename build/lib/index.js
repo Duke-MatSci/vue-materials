@@ -43,6 +43,17 @@ async function buildLibrary() {
 						},
 						dir: "dist",
 					},
+					// Disable CSS processing in rollup
+					onwarn(warning, warn) {
+						// Suppress CSS-related warnings
+						if (
+							warning.code === "CSS_CHUNK_LOAD_FAILED" ||
+							warning.message.includes("CSS")
+						) {
+							return
+						}
+						warn(warning)
+					},
 				},
 				cssCodeSplit: false, // Disable CSS code splitting
 			},

@@ -2,6 +2,7 @@
 node_modules
 /dist
 /DO_NOT_USE
+/.cursor
 
 # local env files
 .env.local

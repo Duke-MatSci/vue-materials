@@ -7,6 +7,14 @@
 			<h4>Button Examples</h4>
 			<TestButton />
 		</div>
+		<div style="margin-top: 20px">
+			<h4>Card Examples</h4>
+			<TestCard />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Card Examples</h4>
+			<TestToolbar />
+		</div>
 
 		<!-- Commented out until components are migrated -->
 		<!--
@@ -46,11 +54,15 @@
 
 <script>
 import TestButton from "./components/TestButton.vue"
+import TestCard from "./components/TestCard.vue"
+import TestToolbar from "./components/TestToolbar.vue"
 
 export default {
 	name: "MdAppTest",
 	components: {
 		TestButton,
+		TestCard,
+		TestToolbar,
 	},
 	data() {
 		return {

@@ -1,29 +1,3 @@
-// import path from 'node:path'
-// import { defineConfig } from 'vite'
-// import vuePlugin from '@vitejs/plugin-vue'
-
-// const base = '/'
-
-// export default defineConfig(({ command, ssrBuild }) => ({
-//   base,
-// 	resolve: {
-//     alias: {
-//       "@": path.resolve(__dirname, 'src'),
-// 			"@localconfig": path.resolve(__dirname, 'src'),
-//     }
-//   },
-//   plugins: [
-//     vuePlugin(),
-
-//   ],
-
-//   build: {
-//     minify: true,
-// 		target: 'esnext'
-//   },
-
-// }))
-
 import path from "node:path"
 import { defineConfig } from "vite"
 import vuePlugin from "@vitejs/plugin-vue"
@@ -32,13 +6,35 @@ const base = "/"
 
 export default defineConfig({
 	base,
-	plugins: [vuePlugin()],
+	plugins: [
+		vuePlugin({
+			// Ensure Vue plugin doesn't bundle Vue
+			template: {
+				compilerOptions: {
+					// Disable custom element handling that might cause issues
+					isCustomElement: () => false,
+				},
+			},
+		}),
+	],
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "src"),
 			"~": path.resolve(__dirname, "src"),
 			"@localconfig": path.resolve(__dirname, "src"),
 		},
+	},
+	css: {
+		// Completely disable CSS compilation - we'll copy CSS files directly
+		preprocessorOptions: {
+			scss: false,
+		},
+		// Disable CSS modules
+		modules: false,
+		// Disable CSS injection
+		inject: false,
+		// Disable CSS code splitting
+		codeSplit: false,
 	},
 	build: {
 		lib: {
@@ -69,42 +65,20 @@ export default defineConfig({
 				// preserveModules: true,
 				dir: "dist",
 			},
-			// plugins: [
-			//   multi({
-			//     include: ['src/components/**/*.js'],
-			//   }),
-			// ]
+			// Disable CSS processing in rollup
+			onwarn(warning, warn) {
+				// Suppress CSS-related warnings
+				if (
+					warning.code === "CSS_CHUNK_LOAD_FAILED" ||
+					warning.message.includes("CSS")
+				) {
+					return
+				}
+				warn(warning)
+			},
 		},
 		outDir: "dist",
 		emptyOutDir: false, // Don't clean the dist directory by default
+		cssCodeSplit: false, // Disable CSS code splitting
 	},
 })
-
-// import { resolve } from 'path'
-// import { defineConfig } from 'vite'
-// import vue from '@vitejs/plugin-vue'
-
-// // https://vitejs.dev/config/
-// export default defineConfig({
-//   plugins: [vue()],
-//   build: {
-//     lib: {
-//       entry: resolve(__dirname, 'lib/main.ts'),
-//       name: 'VueComponentNpmExample',
-//       // the proper extensions will be added
-//       fileName: 'vue-component-npm-example'
-//     },
-//     rollupOptions: {
-//       // make sure to externalize deps that shouldn't be bundled
-//       // into your library
-//       external: ['vue'],
-//       output: {
-//         // Provide global variables to use in the UMD build
-//         // for externalized deps
-//         globals: {
-//           vue: 'Vue'
-//         }
-//       }
-//     }
-//   }
-// })

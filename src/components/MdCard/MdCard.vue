@@ -1,7 +1,8 @@
 <script>
-import { h, reactive, computed, provide } from "vue"
+import { h, reactive, computed, provide, getCurrentInstance } from "vue"
+import MdComponent from "@/core/MdComponent"
 
-export default {
+export default MdComponent({
 	name: "MdCard",
 	props: {
 		mdWithHover: Boolean,
@@ -21,16 +22,31 @@ export default {
 		})
 
 		return () => {
+			// Get the component instance to access $mdActiveTheme
+			const instance = getCurrentInstance()
+
+			// Build the card classes exactly as in the old Vue 2 version
+			// Now using $mdActiveTheme provided by MdComponent
+			const allClasses = ["md-card"]
+
+			// Add theme class if available (provided by MdComponent)
+			if (instance && instance.proxy && instance.proxy.$mdActiveTheme) {
+				allClasses.push(instance.proxy.$mdActiveTheme)
+			}
+
+			// Add computed card classes
+			allClasses.push(cardClasses.value)
+
 			return h(
 				"div",
 				{
-					class: ["md-card", cardClasses.value],
+					class: allClasses,
 				},
 				slots && slots.default ? slots.default() : []
 			)
 		}
 	},
-}
+})
 </script>
 
 <style lang="scss">

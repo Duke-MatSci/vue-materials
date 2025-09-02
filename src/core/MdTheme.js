@@ -32,19 +32,26 @@ function getAncestorTheme(component) {
 		const currentTheme = component.mdTheme
 		const getParentThemeName = (parent) => {
 			if (parent) {
-				const { mdTheme, $parent } = parent
+				const { mdTheme } = parent
+
+				// In Vue 3, we need to access the parent differently
+				// For now, we'll use the component's parent property if available
+				const parentComponent = parent.$parent || parent.parent
 
 				if (mdTheme && mdTheme !== currentTheme) {
 					return mdTheme
 				}
 
-				return getParentThemeName($parent)
+				return getParentThemeName(parentComponent)
 			}
 
 			return themeData.theme
 		}
 
-		return getParentThemeName(component.$parent)
+		// In Vue 3, we need to handle parent access differently
+		// For now, we'll use the component's parent property if available
+		const parentComponent = component.$parent || component.parent
+		return getParentThemeName(parentComponent)
 	}
 
 	return null
