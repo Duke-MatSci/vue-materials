@@ -15,7 +15,14 @@
 			<h4>Card Examples</h4>
 			<TestToolbar />
 		</div>
-
+		<div style="margin-top: 20px">
+			<h4>List Examples</h4>
+			<TestList />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Snack Examples</h4>
+			<TestSnack />
+		</div>
 		<!-- Commented out until components are migrated -->
 		<!--
 		<MdApp md-mode="reveal">
@@ -56,6 +63,8 @@
 import TestButton from "./components/TestButton.vue"
 import TestCard from "./components/TestCard.vue"
 import TestToolbar from "./components/TestToolbar.vue"
+import TestList from "./components/TestList.vue"
+import TestSnack from "./components/TestSnack.vue"
 
 export default {
 	name: "MdAppTest",
@@ -63,6 +72,8 @@ export default {
 		TestButton,
 		TestCard,
 		TestToolbar,
+		TestList,
+		TestSnack,
 	},
 	data() {
 		return {
