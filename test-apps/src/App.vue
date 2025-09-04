@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div class="">
 		<h2>Vue Materials Test</h2>
 
 		<!-- Test Button Component -->
@@ -26,6 +26,18 @@
 		<div style="margin-top: 20px">
 			<h4>Stepper Examples</h4>
 			<TestStepper />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Drawer Examples</h4>
+			<TestDrawer />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Dialog Examples</h4>
+			<TestDialog />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Tabs Examples (Standalone)</h4>
+			<TestTabs />
 		</div>
 		<!-- Commented out until components are migrated -->
 		<!--
@@ -70,6 +82,9 @@ import TestToolbar from "./components/TestToolbar.vue"
 import TestList from "./components/TestList.vue"
 import TestSnack from "./components/TestSnack.vue"
 import TestStepper from "./components/TestStepper.vue"
+import TestDrawer from "./components/TestDrawer.vue"
+import TestDialog from "./components/TestDialog.vue"
+import TestTabs from "./components/TestTabs.vue"
 
 export default {
 	name: "MdAppTest",
@@ -80,6 +95,9 @@ export default {
 		TestList,
 		TestSnack,
 		TestStepper,
+		TestDrawer,
+		TestDialog,
+		TestTabs,
 	},
 	data() {
 		return {

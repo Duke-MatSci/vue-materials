@@ -1,8 +1,9 @@
 <script>
-import { h, Teleport, nextTick } from "vue"
+import { h, Teleport } from "vue"
 
 export default {
   name: "MdPortal",
+  inheritAttrs: false,
   props: {
     mdAttachToParent: Boolean,
     mdTarget: {
@@ -11,55 +12,45 @@ export default {
         if (typeof HTMLElement !== "undefined" && value && value instanceof HTMLElement) {
           return true
         }
+        if (value == null) return true
         console.warn("The md-target-el prop is invalid. You should pass a valid HTMLElement.")
         return false
       },
     },
   },
-  emits: ["md-destroy", "md-initial-parent"],
   data() {
-    return {
-      toEl: null,
-      initialParent: null,
-    }
+    return { toEl: null, anchorEl: null }
   },
   mounted() {
-    // Parent element of this component in the DOM tree
-    const parentEl = this.$.parent && this.$.parent.vnode ? this.$.parent.vnode.el : null
-    this.initialParent = parentEl || null
-    this.$emit("md-initial-parent", this.initialParent)
+    // Mirror old behavior: attach to parent’s parent when requested, else to target or body
+    // In Vue 3, a component that renders only a Teleport still has an anchor comment node in DOM
+    this.anchorEl = this.$el || null
     this.updateTarget()
   },
-  beforeUnmount() {
-    this.$emit("md-destroy")
-  },
   watch: {
-    mdTarget() {
-      this.updateTarget()
-    },
-    mdAttachToParent() {
-      this.updateTarget()
-    },
+    mdTarget() { this.updateTarget() },
+    mdAttachToParent() { this.updateTarget() },
   },
   methods: {
-    computeTarget() {
-      if (this.mdAttachToParent) {
-        const parentEl = this.$.parent && this.$.parent.vnode ? this.$.parent.vnode.el : null
-        return parentEl && parentEl.parentNode ? parentEl.parentNode : null
-      }
-      if (this.mdTarget) return this.mdTarget
-      if (typeof document !== "undefined") return document.body
-      return null
-    },
     updateTarget() {
-      this.toEl = this.computeTarget()
-      nextTick()
+      // Use the component's anchor position in the DOM to compute relative targets
+      const anchor = this.anchorEl
+      if (this.mdAttachToParent) {
+        // Move one level up from where this portal is anchored (parent of the container where Portal sits)
+        this.toEl = anchor && anchor.parentNode && anchor.parentNode.parentNode
+          ? anchor.parentNode.parentNode
+          : (typeof document !== 'undefined' ? document.body : null)
+      } else if (this.mdTarget) {
+        this.toEl = this.mdTarget
+      } else {
+        this.toEl = typeof document !== "undefined" ? document.body : null
+      }
     },
   },
   render() {
     const children = this.$slots.default ? this.$slots.default() : []
-    const to = this.toEl || (typeof document !== "undefined" ? document.body : null)
-    return to ? h(Teleport, { to }, children) : (children[0] || null)
+    // If there is no target (SSR), render inline fallback
+    return this.toEl ? h(Teleport, { to: this.toEl }, children) : (children[0] || null)
   },
 }
 </script>

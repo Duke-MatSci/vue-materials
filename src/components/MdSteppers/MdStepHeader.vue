@@ -73,7 +73,7 @@ export default {
         ...(this.data.props || {}),
         ...on,
       },
-      [numberOrIcon, text]
+      { default: () => [numberOrIcon, text] }
     )
   },
 }
