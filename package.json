@@ -1,7 +1,7 @@
 {
 	"name": "@duke-matsci/vue-materials",
 	"private": false,
-	"version": "0.0.394",
+	"version": "0.0.395",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -42,6 +42,10 @@
 		"./dist/style.css": {
 			"import": "./dist/style.css",
 			"require": "./dist/style.css"
+		},
+		"./dist/vue-material.min.css": {
+			"import": "./dist/vue-material.min.css",
+			"require": "./dist/vue-material.min.css"
 		},
 		"./dist/theme/default.css": {
 			"import": "./dist/theme/default.css",
