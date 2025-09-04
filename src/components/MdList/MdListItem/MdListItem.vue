@@ -1,7 +1,6 @@
 <script>
-import { h, getCurrentInstance } from "vue"
+import { h } from "vue"
 import MdInteractionEvents from "@/core/utils/MdInteractionEvents"
-import MdRouterLinkProps from "@/core/utils/MdRouterLinkProps"
 import MdListItemDefault from "./MdListItemDefault.vue"
 import MdListItemFakeButton from "./MdListItemFakeButton.vue"
 import MdListItemButton from "./MdListItemButton.vue"
@@ -11,330 +10,173 @@ import MdListItemExpand from "./MdListItemExpand.vue"
 import MdButton from "@/components/MdButton/MdButton.vue"
 
 function hasExpansion(props) {
-	return props.hasOwnProperty("mdExpand") && props.mdExpand !== false
+  return Object.prototype.hasOwnProperty.call(props, "mdExpand") && props.mdExpand !== false
 }
 
-function resolveScopedSlot(props, children) {
-	if (hasExpansion(props)) {
-		return {
-			"md-expand": () => {
-				return children["md-expand"] ? children["md-expand"]() : []
-			},
-		}
-	}
+function hasMdExpandSlot(props, slots) {
+  return hasExpansion(props) && slots && typeof slots["md-expand"] === "function"
 }
 
-function hasChildrenButtons(childrens) {
-	if (!childrens.default) return false
-	return childrens
-		.default()
-		.some(
-			(children) =>
-				children.componentOptions &&
-				children.componentOptions.tag === "md-button"
-		)
+function hasChildrenButtons(children, Button) {
+  if (!children || !children.default) return false
+  const nodes = children.default()
+  return nodes.some((vnode) => {
+    const t = vnode && vnode.type
+    return t === Button || (t && t.name === "MdButton") || t === "md-button"
+  })
 }
 
-function shouldRenderButtonWithListener(listeners) {
-	let listenerNames = Object.keys(listeners)
-	let shouldRender = false
-
-	listenerNames.forEach((listener) => {
-		if (MdInteractionEvents.includes(listener)) {
-			shouldRender = true
-		}
-	})
-
-	return shouldRender
+function shouldRenderButtonWithListener(attrs) {
+  const names = Object.keys(attrs || {})
+  return names.some((n) => MdInteractionEvents.includes(n))
 }
 
-function isRouterLink(parent, props) {
-	return parent && parent.$router && props.to
+function hasRouter(instance) {
+  const gp =
+    (instance &&
+      instance.$ &&
+      instance.$.appContext &&
+      instance.$.appContext.config &&
+      instance.$.appContext.config.globalProperties) ||
+    {}
+  return !!gp.$router
 }
 
-function createListComponent(props, parent, listeners, children) {
-	if (hasExpansion(props)) {
-		return MdListItemExpand
-	}
-
-	if (props.disabled) {
-		return MdListItemButton
-	}
-
-	if (isRouterLink(parent, props)) {
-		MdListItemRouter.props = MdRouterLinkProps(parent, {
-			target: String,
-		})
-		delete MdListItemRouter.props.href
-
-		return MdListItemRouter
-	}
-
-	if (props.href) {
-		return MdListItemLink
-	}
-
-	if (shouldRenderButtonWithListener(listeners)) {
-		return renderButtonWithListener(children)
-	}
-
-	return MdListItemDefault
+function createListComponent(props, routerAvailable, attrs, slots) {
+  if (hasExpansion(props)) return MdListItemExpand
+  if (props.disabled) return MdListItemButton
+  if (routerAvailable && props.to) return MdListItemRouter
+  if (props.href) return MdListItemLink
+  if (shouldRenderButtonWithListener(attrs)) return renderButtonWithListener(slots)
+  return MdListItemDefault
 }
 
-function renderButtonWithListener(children) {
-	if (hasChildrenButtons(children)) {
-		return MdListItemFakeButton
-	}
-	return MdListItemButton
+function renderButtonWithListener(slots) {
+  return hasChildrenButtons(slots, MdButton) ? MdListItemFakeButton : MdListItemButton
 }
 
 export default {
-	name: "MdListItem",
-	components: {
-		MdButton,
-	},
-	props: {
-		href: String,
-		target: String,
-		disabled: Boolean,
-		to: [String, Object],
-		download: String,
-		hreflang: String,
-		ping: String,
-		rel: String,
-		type: String,
-		mdExpanded: Boolean,
-		mdExpand: Boolean,
-	},
-	setup(props, { slots, attrs }) {
-		// Get current instance for router access
-		const instance = getCurrentInstance()
-		const router = instance?.appContext?.config?.globalProperties?.$router
+  name: "MdListItem",
+  components: { MdButton },
+  inheritAttrs: false,
+  props: {
+    href: String,
+    target: String,
+    disabled: Boolean,
+    to: [String, Object],
+    download: String,
+    hreflang: String,
+    ping: String,
+    rel: String,
+    type: String,
+    mdExpanded: Boolean,
+    mdExpand: Boolean,
+  },
+  render() {
+    const slots = this.$slots
+    const listenersAndAttrs = this.$attrs || {}
+    const listComponent = createListComponent(this.$props, hasRouter(this), listenersAndAttrs, slots)
 
-		// Create a parent context object for router detection
-		const parentContext = { $router: router }
+    let liClass = "md-list-item"
+    if (listenersAndAttrs.class) liClass += " " + listenersAndAttrs.class
 
-		// In Vue 3, listeners are merged into attrs
-		const listeners = attrs || {}
+    // Pass attrs both to li and inner container to preserve behavior
+    const childProps = {
+      class: ["md-list-item-container", "md-button-clean", listenersAndAttrs.class || ""],
+      ...listenersAndAttrs,
+      ...(this.mdExpanded !== undefined ? { mdExpanded: this.mdExpanded } : {}),
+      ...(this.disabled !== undefined ? { disabled: this.disabled } : {}),
+      ...(this.to ? { to: this.to } : {}),
+      ...(this.href ? { href: this.href } : {}),
+      ...(this.target ? { target: this.target } : {}),
+      ...(this.download ? { download: this.download } : {}),
+      ...(this.hreflang ? { hreflang: this.hreflang } : {}),
+      ...(this.ping ? { ping: this.ping } : {}),
+      ...(this.rel ? { rel: this.rel } : {}),
+      ...(this.type ? { type: this.type } : {}),
+    }
 
-		return () => {
-			// Create children object similar to Vue 2 functional component
-			const children = {
-				default: slots.default ? slots.default : [],
-				"md-expand": slots["md-expand"] ? slots["md-expand"] : [],
-			}
+    const slotObj = {}
+    if (slots && typeof slots.default === "function") slotObj.default = () => slots.default()
+    if (hasMdExpandSlot(this.$props, slots)) slotObj["md-expand"] = () => slots["md-expand"]()
 
-			let listComponent = createListComponent(
-				props,
-				parentContext,
-				listeners,
-				children
-			)
-			let staticClass = "md-list-item"
-
-			if (attrs.class) {
-				staticClass += " " + attrs.class
-			}
-
-			return h(
-				"li",
-				{
-					...attrs,
-					class: staticClass,
-				},
-				[
-					h(
-						listComponent,
-						{
-							class: [
-								// Use array form so child's `class` merges instead of being overwritten
-								"md-list-item-container",
-								"md-button-clean",
-								attrs.class || "",
-							],
-							...listeners,
-							...(props.mdExpanded !== undefined && {
-								mdExpanded: props.mdExpanded,
-							}),
-							...(props.disabled !== undefined && { disabled: props.disabled }),
-							...(props.to && { to: props.to }),
-							...(props.href && { href: props.href }),
-							...(props.target && { target: props.target }),
-							...(props.download && { download: props.download }),
-							...(props.hreflang && { hreflang: props.hreflang }),
-							...(props.ping && { ping: props.ping }),
-							...(props.rel && { rel: props.rel }),
-							...(props.type && { type: props.type }),
-							scopedSlots: resolveScopedSlot(props, children),
-						},
-						children.default
-					),
-				]
-			)
-		}
-	},
+    return h("li", { ...listenersAndAttrs, class: liClass }, [h(listComponent, childProps, slotObj)])
+  },
 }
 </script>
 
 <style lang="scss">
-@import "../../MdAnimation/variables.scss";
+@import "@/components/MdAnimation/variables";
 
 .md-list-item {
-	height: auto;
-	position: relative;
-	z-index: 2;
+  height: auto;
+  position: relative;
+  z-index: 2;
 
-	&.md-inset {
-		.md-list-item-content {
-			padding-left: 72px;
-		}
-	}
+  &.md-inset {
+    .md-list-item-content { padding-left: 72px; }
+  }
 
-	.md-icon {
-		margin: 0;
-		transition-property: color, margin-right;
-	}
+  .md-icon {
+    &:first-child { margin-right: 32px; }
+    &:last-child { margin-left: 16px; }
+  }
 }
 
 .md-list-item-container {
-	width: 100%;
-	font-size: 16px;
-	font-weight: 400;
-	text-align: left;
-	text-transform: none;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 400;
+  text-align: left;
+  text-transform: none;
 
-	&:not(.md-list-item-default):not([disabled]) {
-		> .md-list-item-content {
-			user-select: none;
-			cursor: pointer;
-		}
-	}
+  &:not(.md-list-item-default):not([disabled]) > .md-list-item-content {
+    user-select: none;
+    cursor: pointer;
+  }
 
-	&.md-button-clean:hover {
-		opacity: 1;
-		text-decoration: none;
-	}
+  &.md-button-clean:hover { opacity: 1; text-decoration: none; }
 }
 
 .md-list-item-content {
-	min-height: 48px;
-	padding: 4px 16px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	transition: padding 0.4s $md-transition-stand-timing;
-	will-change: padding;
+  min-height: 48px;
+  padding: 4px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: padding .4s $md-transition-stand-timing;
+  will-change: padding;
 
-	.md-list.md-dense & {
-		min-height: 40px;
-		font-size: 13px;
+  .md-list.md-dense & { min-height: 40px; font-size: 13px; }
+  .md-list.md-double-line & { min-height: 72px; }
+  .md-list.md-double-line.md-dense & { min-height: 60px; }
+  .md-list.md-triple-line & { min-height: 88px; }
+  .md-list.md-triple-line.md-dense & { min-height: 76px; }
 
-		> .md-avatar {
-			margin-top: 0;
-			margin-bottom: 0;
-
-			&:not(.md-small) {
-				width: 36px;
-				min-width: 36px;
-				height: 36px;
-			}
-
-			&:first-child {
-				margin-right: 20px;
-			}
-		}
-	}
-
-	.md-list.md-double-line & {
-		min-height: 72px;
-	}
-
-	.md-list.md-double-line.md-dense & {
-		min-height: 60px;
-	}
-
-	.md-list.md-triple-line & {
-		min-height: 88px;
-	}
-
-	.md-list.md-triple-line.md-dense & {
-		min-height: 76px;
-	}
-
-	.md-list-action {
-		margin: 0 -10px 0 0;
-
-		&:last-of-type {
-			margin: 0 -10px 0 16px;
-
-			.md-list.md-triple-line & {
-				align-self: flex-start;
-			}
-		}
-	}
-
-	> .md-icon:first-child {
-		margin-right: 32px;
-	}
-
-	> .md-icon:last-child {
-		margin-left: 16px;
-	}
-
-	> .md-checkbox,
-	> .md-radio {
-		margin: 0;
-
-		&:first-child {
-			margin-right: 36px;
-		}
-	}
-
-	> .md-switch {
-		margin: 0;
-
-		&:first-child {
-			margin-right: 22px;
-		}
-	}
-
-	> .md-avatar {
-		margin: 4px 0;
-
-		&:first-child {
-			margin-right: 16px;
-		}
-	}
+  .md-list-action { margin: 0 -10px 0 0; }
+  .md-list-action:last-of-type { margin: 0 -10px 0 16px; }
 }
 
 .md-list-item-text {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	overflow: hidden;
-	line-height: 1.25em;
-	white-space: nowrap;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
+  line-height: 1.25em;
+  white-space: nowrap;
 
-	.md-list.md-dense & {
-		font-size: 13px;
-	}
+  .md-list.md-dense & { font-size: 13px; }
 
-	* {
-		width: 100%;
-		margin: 0;
-		overflow: hidden;
-		line-height: 1.25em;
-		text-overflow: ellipsis;
-	}
+  * {
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+    line-height: 1.25em;
+    text-overflow: ellipsis;
+  }
 
-	:nth-child(2),
-	:nth-child(3) {
-		font-size: 14px;
-	}
-
-	.md-list.md-dense & * {
-		font-size: 13px;
-	}
+  :nth-child(2), :nth-child(3) { font-size: 14px; }
+  .md-list.md-dense & * { font-size: 13px; }
 }
 </style>

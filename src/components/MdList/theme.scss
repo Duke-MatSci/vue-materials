@@ -1,3 +1,5 @@
+@import "@/components/MdAnimation/variables";
+
 .md-list {
   @include md-theme-component() {
     @include md-theme-property(background-color, background);

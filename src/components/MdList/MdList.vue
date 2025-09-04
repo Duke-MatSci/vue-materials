@@ -1,107 +1,78 @@
-<template>
-	<ul
-		class="md-list"
-		:class="[$mdActiveTheme]"
-		v-bind="$attrs"
-		v-on="$listeners"
-	>
-		<slot />
-	</ul>
-</template>
-
 <script>
-import { h, reactive, provide, getCurrentInstance } from "vue"
+import { h, getCurrentInstance, provide, reactive } from "vue"
 import MdComponent from "@/core/MdComponent"
 
 export default MdComponent({
-	name: "MdList",
-	props: {
-		mdExpandSingle: {
-			default: false,
-		},
-	},
-	setup(props, { slots, attrs }) {
-		// Get the component instance to access $mdActiveTheme
-		const instance = getCurrentInstance()
-		const themeClass = instance?.proxy?.$mdActiveTheme || null
+  name: "MdList",
+  props: {
+    mdExpandSingle: { type: Boolean, default: false },
+  },
+  setup(props, { slots, attrs }) {
+    const inst = getCurrentInstance()
+    const activeTheme = (inst && inst.proxy && inst.proxy.$mdActiveTheme) || null
 
-		const MdList = reactive({
-			expandable: [],
-			expandATab: (expandedListItem) => {
-				if (props.mdExpandSingle && expandedListItem) {
-					const otherExpandableListItems = MdList.expandable.filter(
-						(target) => target !== expandedListItem
-					)
-					otherExpandableListItems.forEach((expandableListItem) =>
-						expandableListItem.close()
-					)
-				}
-			},
-			pushExpandable: (expandableListItem) => {
-				let expandableListItems = MdList.expandable
+    const MdList = reactive({
+      expandable: [],
+      expandATab(expanded) {
+        if (props.mdExpandSingle && expanded) {
+          const others = MdList.expandable.filter((t) => t !== expanded)
+          others.forEach((item) => item.close && item.close())
+        }
+      },
+      pushExpandable(item) {
+        const list = MdList.expandable
+        if (!list.find((t) => t === item)) {
+          MdList.expandable = list.concat([item])
+        }
+      },
+      removeExpandable(item) {
+        const list = MdList.expandable
+        if (list.find((t) => t === item)) {
+          MdList.expandable = list.filter((t) => t !== item)
+        }
+      },
+    })
 
-				if (
-					!expandableListItems.find((target) => target === expandableListItem)
-				) {
-					MdList.expandable = expandableListItems.concat([expandableListItem])
-				}
-			},
-			removeExpandable: (expandableListItem) => {
-				let expandableListItems = MdList.expandable
+    provide("MdList", MdList)
 
-				if (
-					expandableListItems.find((target) => target === expandableListItem)
-				) {
-					MdList.expandable = expandableListItems.filter(
-						(target) => target !== expandableListItem
-					)
-				}
-			},
-		})
-
-		provide("MdList", MdList)
-
-		return () => {
-			return h(
-				"ul",
-				{
-					class: ["md-list", themeClass],
-					...attrs,
-				},
-				slots.default ? slots.default() : []
-			)
-		}
-	},
+    return () =>
+      h(
+        "ul",
+        { class: ["md-list", activeTheme], ...attrs },
+        slots.default ? slots.default() : []
+      )
+  },
 })
 </script>
 
 <style lang="scss">
-@import "../MdAnimation/variables.scss";
+@import "@/components/MdAnimation/variables";
 
 .md-list {
-	margin: 0;
-	padding: 8px 0;
-	display: flex;
-	flex-flow: column nowrap;
-	position: relative;
-	list-style: none;
+  margin: 0;
+  padding: 8px 0;
+  display: flex;
+  flex-flow: column nowrap;
+  position: relative;
+  list-style: none;
 
-	&.md-dense {
-		padding: 4px 0;
-	}
+  &.md-dense {
+    padding: 4px 0;
+  }
 
-	.md-divider {
-		margin-top: -1px;
-	}
+  .md-divider {
+    margin-top: -1px;
+  }
 
-	.md-subheader {
-		&.md-inset {
-			padding-left: 72px;
-		}
-	}
+  .md-subheader {
+    &.md-inset {
+      padding-left: 72px;
+    }
+  }
 
-	> .md-subheader:first-of-type {
-		margin-top: -8px;
-	}
+  > .md-subheader:first-of-type {
+    margin-top: -8px;
+  }
 }
 </style>
+

@@ -4,6 +4,7 @@ import App from "./App.vue"
 // Import Vue Materials components
 import VueMaterials from "../../dist/vue-materials.js"
 import "../../dist/vue-material.min.css"
+// import "../../dist/style.css"
 import "../../dist/theme/default.css"
 
 console.log("VueMaterials:", VueMaterials)
