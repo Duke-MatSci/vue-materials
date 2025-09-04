@@ -275,35 +275,40 @@ export default MdComponent({
           { class: ["md-tabs-navigation", this.navigationClasses] },
           [
 						...this.orderedItems.map(
-							({ id, label, props, icon, disabled, data, events }, index) =>
-								h(
-									MdButton,
-									{
-										key: index,
-										class: {
-											"md-tab-nav-button": true,
-											"md-active": !this.mdSyncRoute && this.isActiveTabId(id),
-											"md-icon-label": icon && label,
-										},
-										disabled,
-										...props,
-										...events,
-										onClick: () => this.setActiveTab(id),
-									},
-									() => [
-										this.$slots && this.$slots["md-tab"]
-											? this.$slots["md-tab"]({ tab: { label, icon, data } })
-											: icon
-											? [
-													this.isAssetIcon(icon)
-														? h(MdIcon, { class: "md-tab-icon", mdSrc: icon })
-														: h(MdIcon, { class: "md-tab-icon" }, () => icon),
-													h("span", { class: "md-tab-label" }, label),
-											  ]
-											: label,
-									]
-								)
-						),
+            ({ id, label, props, icon, disabled, data, events }, index) => {
+              const { class: externalClass, ...restEvents } = events || {}
+              return h(
+                MdButton,
+                {
+                  key: index,
+                  class: [
+                    {
+                      "md-tab-nav-button": true,
+                      "md-active": !this.mdSyncRoute && this.isActiveTabId(id),
+                      "md-icon-label": icon && label,
+                    },
+                    externalClass,
+                  ],
+                  disabled,
+                  ...props,
+                  ...restEvents,
+                  onClick: () => this.setActiveTab(id),
+                },
+                () => [
+                  this.$slots && this.$slots["md-tab"]
+                    ? this.$slots["md-tab"]({ tab: { label, icon, data } })
+                    : icon
+                    ? [
+                        this.isAssetIcon(icon)
+                          ? h(MdIcon, { class: "md-tab-icon", mdSrc: icon })
+                          : h(MdIcon, { class: "md-tab-icon" }, () => icon),
+                        h("span", { class: "md-tab-label" }, label),
+                      ]
+                    : label,
+                ]
+              )
+            }
+          ),
             h("span", { class: ["md-tabs-indicator", this.indicatorClass], style: this.indicatorStyles }),
           ]
         ),

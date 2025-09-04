@@ -1,6 +1,5 @@
 <script>
 import { h, nextTick } from "vue"
-import MdRouterLinkProps from "@/core/utils/MdRouterLinkProps"
 import MdObserveElement from "@/core/utils/MdObserveElement"
 import MdUuid from "@/core/utils/MdUuid"
 
@@ -76,15 +75,13 @@ export default {
     this.MdTabs.items = new Map(this.MdTabs.items)
   },
   render() {
-    let attrs = { class: "md-tab", ...this.$attrs, id: this.id }
-    // Avoid accessing this.$router when not installed (Vue 3 dev warning)
-    const gp = (this.$ && this.$.appContext && this.$.appContext.config && this.$.appContext.config.globalProperties) || {}
-    const hasRouter = !!gp.$router
-    if (hasRouter && this.to) {
-      this.$options.props = MdRouterLinkProps(this, this.$options.props)
-      attrs.props = this.$props
-    }
-    return h("div", attrs, this.$slots.default ? this.$slots.default() : [])
+    const { class: externalClass, ...rest } = this.$attrs || {}
+    // Always preserve the internal `.md-tab` class so MdTabs can locate tabs
+    return h(
+      "div",
+      { id: this.id, class: ["md-tab", externalClass], ...rest },
+      this.$slots.default ? this.$slots.default() : []
+    )
   },
 }
 </script>

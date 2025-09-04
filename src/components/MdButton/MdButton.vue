@@ -4,12 +4,11 @@ import MdComponent from "../../core/MdComponent"
 import MdFocused from "../../core/mixins/MdFocused/MdFocused"
 import MdRipple from "../../core/mixins/MdRipple/MdRipple"
 import MdRouterLink from "../../core/mixins/MdRouterLink/MdRouterLink"
-import MdRouterLinkProps from "../../core/utils/MdRouterLinkProps"
 
 export default MdComponent({
 	name: "MdButton",
 	mixins: [MdRipple, MdFocused, MdRouterLink],
-	props: {
+  props: {
 		href: String,
 		type: {
 			type: String,
@@ -27,8 +26,8 @@ export default MdComponent({
 		exact: Boolean,
 		event: [String, Array],
 		exactActiveClass: String,
-	},
-	emits: [
+  },
+  emits: [
 		"click",
 		"touchstart",
 		"touchmove",
@@ -40,13 +39,19 @@ export default MdComponent({
 			rippleActive: false,
 		}
 	},
-	computed: {
+  computed: {
 		rippleWorks() {
 			return this.mdRipple && !this.disabled
 		},
-		isRouterLink() {
-			return this.$router && this.to
-		},
+    isRouterLink() {
+      const gp =
+        (this.$ &&
+          this.$.appContext &&
+          this.$.appContext.config &&
+          this.$.appContext.config.globalProperties) ||
+        {}
+      return !!gp.$router && !!this.to
+    },
 		tag() {
 			if (this.href) {
 				return "a"
@@ -71,18 +76,9 @@ export default MdComponent({
 				},
 			]
 		},
-	},
-	watch: {
-		to: {
-			handler() {
-				if (this.isRouterLink) {
-					this.$options.props = MdRouterLinkProps(this, this.$options.props)
-				}
-			},
-			immediate: true,
-		},
-	},
-	methods: {
+  },
+  watch: {},
+  methods: {
 		handleTouchStart(event) {
 			if (this.rippleWorks) {
 				this.rippleActive = event
@@ -109,17 +105,19 @@ export default MdComponent({
 			// Emit the update for parent components
 			this.$emit("update:mdRippleActive", active)
 		},
-	},
-	render() {
-		// Build the ripple content structure directly
-		const rippleContent = h("div", { class: "md-ripple" }, [
-			h(
-				"div",
-				{ class: "md-button-content" },
-				this.$slots.default ? this.$slots.default() : []
-			),
-			h("div"), // Empty div for ripple wave
-		])
+  },
+  render() {
+    // Inherit external attrs and merge classes cleanly
+    const { class: externalClass, ...externalAttrs } = this.$attrs || {}
+    // Build the ripple content structure directly
+    const rippleContent = h("div", { class: "md-ripple" }, [
+      h(
+        "div",
+        { class: "md-button-content" },
+        this.$slots.default ? this.$slots.default() : []
+      ),
+      h("div"), // Empty div for ripple wave
+    ])
 
 		// Build the ripple component with proper props
 		const rippleComponent = h(
@@ -134,12 +132,14 @@ export default MdComponent({
 		)
 
 		// Build button attributes - separate props from events
-		const buttonProps = {
-			class: this.buttonClasses,
-			href: this.href,
-			disabled: this.disabled,
-			type: this.buttonType,
-		}
+    const baseClass = [this.buttonClasses, externalClass]
+    const buttonProps = {
+      ...externalAttrs,
+      class: baseClass,
+      href: this.href,
+      disabled: this.disabled,
+      type: this.buttonType,
+    }
 
 		// Build event handlers using Vue 3 event system
 		const buttonEvents = {
@@ -150,26 +150,31 @@ export default MdComponent({
 		}
 
 		// Add router-specific props if needed
-		if (this.isRouterLink) {
-			const exactActiveClass = this.$props.exactActiveClass
-			const activeClass = `${
-				this.$props.activeClass || this.$material.router.linkActiveClass
-			} md-active`
-
-			buttonProps.props = {
-				...this.$props,
-				exactActiveClass,
-				activeClass,
-			}
-
-			// Remove conflicting props for router-link
-			delete buttonProps.type
-			delete buttonProps.href
-		}
+    if (this.isRouterLink) {
+      const exactActiveClass = this.$props.exactActiveClass
+      const activeClass = `${
+        this.$props.activeClass || this.$material.router.linkActiveClass
+      } md-active`
+      // RouterLink expects its props at the root in Vue 3
+      Object.assign(buttonProps, {
+        to: this.$props.to,
+        replace: this.$props.replace,
+        // append is a Vue Router v3 prop; safe to pass if users still rely on it
+        append: this.$props.append,
+        // exact is a Vue Router v3 prop; ignored by v4
+        exact: this.$props.exact,
+        activeClass,
+        exactActiveClass,
+      })
+      // Remove conflicting native props
+      delete buttonProps.type
+      delete buttonProps.href
+    }
 
 		// Create the button element with proper Vue 3 h function structure
-		return h(this.tag, { ...buttonProps, ...buttonEvents }, [rippleComponent])
-	},
+    const tag = this.tag === "router-link" ? resolveComponent("RouterLink") : this.tag
+    return h(tag, { ...buttonProps, ...buttonEvents }, [rippleComponent])
+  },
 })
 </script>
 
