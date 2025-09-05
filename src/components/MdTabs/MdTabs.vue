@@ -1,5 +1,5 @@
 <script>
-import { h, nextTick } from "vue"
+import { h, nextTick, watch } from "vue"
 import raf from "raf"
 import MdComponent from "@/core/MdComponent"
 import MdAssetIcon from "@/core/mixins/MdAssetIcon/MdAssetIcon"
@@ -258,12 +258,38 @@ export default MdComponent({
           this.setupObservers()
         }, 100)
       })
+    // If syncing with router, react to route changes to update indicator/selection
+    try {
+      const gp =
+        (this.$ &&
+          this.$.appContext &&
+          this.$.appContext.config &&
+          this.$.appContext.config.globalProperties) ||
+        {}
+      const router = gp.$router
+      if (this.mdSyncRoute && router && router.currentRoute) {
+        this.__mdTabsStopRouteWatch = watch(
+          router.currentRoute,
+          () => {
+            // Wait for RouterLink classes to settle, then update
+            this.$nextTick().then(() => this.setActiveButtonElAndIndicatorStyles())
+          },
+          { flush: "post" }
+        )
+      }
+    } catch (e) {
+      // noop: router not available
+    }
     this.navEl && this.navEl.addEventListener && this.navEl.addEventListener("transitionend", this.setIndicatorStyles)
   },
   beforeUnmount() {
     this.resizeObserver && this.resizeObserver.disconnect()
     window.removeEventListener("resize", this.callResizeFunctions)
     this.navEl && this.navEl.removeEventListener && this.navEl.removeEventListener("transitionend", this.setIndicatorStyles)
+    if (this.__mdTabsStopRouteWatch) {
+      try { this.__mdTabsStopRouteWatch() } catch (e) {}
+      this.__mdTabsStopRouteWatch = null
+    }
   },
   render() {
     return h(
