@@ -128,8 +128,8 @@ export default MdComponent({
 		},
 		setActiveButtonElAndIndicatorStyles() {
 			nextTick().then(() => {
-				this.setIndicatorStyles()
 				this.setActiveButtonEl()
+				this.setIndicatorStyles()
 			})
 		},
 		tryKeepCurrentTab() {

@@ -169,10 +169,17 @@ export default MdComponent({
       // Remove conflicting native props
       delete buttonProps.type
       delete buttonProps.href
+      // Do not forward `disabled` to RouterLink/anchor to avoid pointer-events:none CSS
+      if (!this.disabled) {
+        delete buttonProps.disabled
+      }
     }
 
 		// Create the button element with proper Vue 3 h function structure
     const tag = this.tag === "router-link" ? resolveComponent("RouterLink") : this.tag
+    if (this.isRouterLink && typeof tag === 'object') {
+      return h(tag, { ...buttonProps, ...buttonEvents }, { default: () => [rippleComponent] })
+    }
     return h(tag, { ...buttonProps, ...buttonEvents }, [rippleComponent])
   },
 })
