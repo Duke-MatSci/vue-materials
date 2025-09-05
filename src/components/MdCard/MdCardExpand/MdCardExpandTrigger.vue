@@ -1,39 +1,59 @@
+<template>
+	<div class="md-card-expand-trigger">
+		<slot />
+	</div>
+</template>
+
 <script>
-  export default {
-    name: 'MdCardExpandTrigger',
-    inject: ['MdCard'],
-    render (createElement) {
-      const [trigger] = this.$slots.default
-      const staticClass = ' md-card-expand-trigger'
-      let listeners = {
-        click: () => {
-          this.MdCard.expand = !this.MdCard.expand
-        }
-      }
+import { h, inject } from "vue"
 
-      if (trigger) {
-        trigger.componentOptions.listeners = {
-          ...trigger.componentOptions.listeners,
-          ...listeners
-        }
-        trigger.data.staticClass += staticClass
+export default {
+	name: "MdCardExpandTrigger",
+	setup(props, { slots }) {
+		// Inject the MdCard context
+		const MdCard = inject("MdCard")
 
-        return trigger
-      }
+		const handleClick = () => {
+			MdCard.expand = !MdCard.expand
+		}
 
-      return createElement('div', {
-        staticClass,
-        on: listeners
-      })
-    }
-  }
+		return () => {
+			const slotContent = slots.default ? slots.default() : []
+
+			// If there's slot content, we need to handle it specially
+			// For now, we'll wrap it in a div with the click handler
+			if (slotContent.length > 0) {
+				return h(
+					"div",
+					{
+						class: "md-card-expand-trigger",
+						onClick: handleClick,
+					},
+					slotContent
+				)
+			}
+
+			// Fallback to a simple div
+			return h(
+				"div",
+				{
+					class: "md-card-expand-trigger",
+					onClick: handleClick,
+				},
+				[]
+			)
+		}
+	},
+}
 </script>
 
 <style lang="scss">
-  @import "~/components/MdAnimation/variables.scss";
+@import "@/components/MdAnimation/variables";
 
-  .md-card-expand-trigger.md-icon-button {
-    transition: transform .4s $md-transition-stand-timing;
-    will-change: transform;
-  }
+.md-card-expand-trigger.md-icon-button {
+	transition: transform 0.4s $md-transition-stand-timing;
+	will-change: transform;
+}
 </style>
+
+

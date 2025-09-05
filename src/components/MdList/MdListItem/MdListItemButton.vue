@@ -1,16 +1,23 @@
-<template>
-	<button type="button" class="md-list-item-button" :disabled="disabled">
-		<md-list-item-content :md-disabled="isDisabled">
-			<slot />
-		</md-list-item-content>
-	</button>
-</template>
-
 <script>
-import MdListItemMixin from "./MdListItemMixin.js"
+import { h } from "vue"
+import MdListItemMixin from "./MdListItemMixin"
+import MdListItemContent from "./MdListItemContent.vue"
 
 export default {
-	name: "MdListItemButton",
-	mixins: [MdListItemMixin],
+  name: "MdListItemButton",
+  mixins: [MdListItemMixin],
+  render() {
+    return h(
+      "button",
+      { type: "button", class: "md-list-item-button", disabled: this.disabled },
+      [
+        h(
+          MdListItemContent,
+          { mdDisabled: this.isDisabled },
+          this.$slots.default ? { default: () => this.$slots.default() } : undefined
+        ),
+      ]
+    )
+  },
 }
 </script>

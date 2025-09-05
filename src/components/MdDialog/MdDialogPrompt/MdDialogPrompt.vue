@@ -24,52 +24,48 @@
 </template>
 
 <script>
-  export default {
-    name: 'MdDialogPrompt',
-		emits:['update:modelValue','md-cancel','update:mdActive','md-confirm'],
-    props: {
-      value: {},
-      mdTitle: String,
-      mdInputName: String,
-      mdInputId: String,
-      mdInputMaxlength: [String, Number],
-      mdInputPlaceholder: [String, Number],
-      mdContent: String,
-      mdConfirmText: {
-        type: String,
-        default: 'Ok'
-      },
-      mdCancelText: {
-        type: String,
-        default: 'Cancel'
-      }
-    },
-    data: () => ({
-      inputValue: null
-    }),
-    watch: {
-      value () {
-        this.inputValue = this.value
-      }
-    },
-    methods: {
-      onCancel () {
-        this.$emit('md-cancel')
-        this.$emit('update:mdActive', false)
-      },
-      onConfirm () {
-        this.$emit('update:modelValue', this.inputValue)
-        this.$emit('md-confirm', this.inputValue)
-        this.$emit('update:mdActive', false)
-      },
-      setInputFocus () {
-        window.setTimeout(() => {
-          this.$refs.input.$el.focus()
-        }, 50)
-      }
-    },
-    created () {
+export default {
+  name: "MdDialogPrompt",
+  props: {
+    value: {},
+    mdTitle: String,
+    mdInputName: String,
+    mdInputId: String,
+    mdInputMaxlength: [String, Number],
+    mdInputPlaceholder: [String, Number],
+    mdContent: String,
+    mdConfirmText: { type: String, default: "Ok" },
+    mdCancelText: { type: String, default: "Cancel" },
+  },
+  data: () => ({
+    inputValue: null,
+  }),
+  watch: {
+    value() {
       this.inputValue = this.value
-    }
-  }
+    },
+  },
+  methods: {
+    onCancel() {
+      this.$emit("md-cancel")
+      this.$emit("update:mdActive", false)
+    },
+    onConfirm() {
+      this.$emit("input", this.inputValue)
+      this.$emit("md-confirm", this.inputValue)
+      this.$emit("update:mdActive", false)
+    },
+    setInputFocus() {
+      window.setTimeout(() => {
+        if (this.$refs && this.$refs.input && this.$refs.input.$el) {
+          this.$refs.input.$el.focus()
+        }
+      }, 50)
+    },
+  },
+  created() {
+    this.inputValue = this.value
+  },
+}
 </script>
+

@@ -7,13 +7,13 @@ import MdTableHead from "./MdTableHead.vue"
 import MdTableCell from "./MdTableCell.vue"
 import MdTablePagination from "./MdTablePagination.vue"
 
-export default (Vue) => {
-	material(Vue)
-	Vue.component("MdTable", MdTable)
-	Vue.component(MdTableToolbar.name, MdTableToolbar)
-	Vue.component(MdTableEmptyState.name, MdTableEmptyState)
-	Vue.component(MdTableRow.name, MdTableRow)
-	Vue.component(MdTableHead.name, MdTableHead)
-	Vue.component(MdTableCell.name, MdTableCell)
-	Vue.component(MdTablePagination.name, MdTablePagination)
+export default (app) => {
+  material(app)
+  app.component("MdTable", MdTable)
+  app.component(MdTableToolbar.name, MdTableToolbar)
+  app.component(MdTableEmptyState.name, MdTableEmptyState)
+  app.component(MdTableRow.name, MdTableRow)
+  app.component(MdTableHead.name, MdTableHead)
+  app.component(MdTableCell.name, MdTableCell)
+  app.component(MdTablePagination.name, MdTablePagination)
 }

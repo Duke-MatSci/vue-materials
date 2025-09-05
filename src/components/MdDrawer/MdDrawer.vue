@@ -1,28 +1,14 @@
-<template>
-	<div class="md-drawer" :class="[$mdActiveTheme, drawerClasses]">
-		<slot />
-		<md-overlay :md-active="mdActive" @click="closeDrawer" v-if="mdFixed" />
-		<md-overlay
-			:md-active="mdActive"
-			@click="closeDrawer"
-			md-attach-to-parent
-			v-else
-		/>
-	</div>
-</template>
-
 <script>
+import { h } from "vue"
 import MdComponent from "@/core/MdComponent"
 import MdOverlay from "@/components/MdOverlay/MdOverlay.vue"
 import MdPropValidator from "@/core/utils/MdPropValidator"
 import MdSwipeable from "@/core/mixins/MdSwipeable/MdSwipeable"
 
-export default new MdComponent({
+export default MdComponent({
 	name: "MdDrawer",
 	mixins: [MdSwipeable],
-	components: {
-		MdOverlay,
-	},
+	components: { MdOverlay },
 	props: {
 		mdRight: Boolean,
 		mdPermanent: {
@@ -36,6 +22,7 @@ export default new MdComponent({
 		mdActive: Boolean,
 		mdFixed: Boolean,
 	},
+	emits: ["update:mdActive", "md-opened", "md-closed"],
 	watch: {
 		mdActive(visible) {
 			if (visible) {
@@ -103,6 +90,26 @@ export default new MdComponent({
 		closeDrawer() {
 			this.$emit("update:mdActive", false)
 		},
+	},
+	render() {
+		const overlay = this.mdFixed
+			? h(MdOverlay, {
+					mdActive: this.mdActive,
+					onClick: this.closeDrawer,
+			  })
+			: h(MdOverlay, {
+					mdActive: this.mdActive,
+					onClick: this.closeDrawer,
+					mdAttachToParent: true,
+			  })
+
+		return h(
+			"div",
+			{
+				class: ["md-drawer", this.$mdActiveTheme, this.drawerClasses],
+			},
+			[this.$slots.default ? this.$slots.default() : null, overlay]
+		)
 	},
 })
 </script>

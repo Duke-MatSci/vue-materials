@@ -3,7 +3,6 @@
     @include md-theme-property(background-color, background);
     @include md-theme-property(color, text-primary, background);
 
-
     .md-stepper-icon,
     .md-stepper-number,
     .md-stepper {
@@ -43,7 +42,7 @@
           @include md-theme-property(background-color, primary, background);
           @include md-theme-property(color, text-primary, primary);
 
-          .svg {
+          svg {
             @include md-theme-property(color, text-primary, primary);
             @include md-theme-property(fill, text-primary, primary);
           }
@@ -55,7 +54,7 @@
           @include md-theme-property-by-hue(color, red, A400, stepper, error);
         }
 
-        .md-icon .svg {
+        .md-icon svg {
           @include md-theme-property-by-hue(color, red, A400, stepper, error);
           @include md-theme-property-by-hue(fill, red, A400, stepper, error);
         }
@@ -63,3 +62,4 @@
     }
   }
 }
+

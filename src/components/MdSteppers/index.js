@@ -1,9 +1,10 @@
-import material from '@/material'
-import MdSteppers from './MdSteppers.vue'
-import MdStep from './MdStep.vue'
+import material from "@/material"
+import MdSteppers from "./MdSteppers.vue"
+import MdStep from "./MdStep.vue"
 
-export default Vue => {
-  material(Vue)
-  Vue.component(MdSteppers.name, MdSteppers)
-  Vue.component(MdStep.name, MdStep)
+export default (app) => {
+  material(app)
+  app.component(MdSteppers.name, MdSteppers)
+  app.component(MdStep.name, MdStep)
 }
+

@@ -1,9 +1,10 @@
-import material from '@/material'
-import MdTabs from './MdTabs.vue'
-import MdTab from './MdTab.vue'
+import material from "@/material"
+import MdTabs from "./MdTabs.vue"
+import MdTab from "./MdTab.vue"
 
-export default Vue => {
-  material(Vue)
-  Vue.component(MdTabs.name, MdTabs)
-  Vue.component(MdTab.name, MdTab)
+export default (app) => {
+  material(app)
+  app.component(MdTabs.name, MdTabs)
+  app.component(MdTab.name, MdTab)
 }
+

@@ -1,62 +1,57 @@
-import MdTable from "./MdTable.vue"
+import { h } from 'vue'
+import MdTable from './MdTable.vue'
 
-function processChildren(children, createElement) {
-	const slotNames = [
-		"md-table-toolbar",
-		"md-table-empty-state",
-		"md-table-pagination",
-	]
-	let nodes = Array.from(children)
-	let namedSlots = {}
+const SLOT_TAGS = [
+  'md-table-toolbar',
+  'md-table-empty-state',
+  'md-table-pagination',
+]
+const SLOT_NAMES = {
+  'md-table-toolbar': 'md-table-toolbar',
+  'md-table-empty-state': 'md-table-empty-state',
+  'md-table-pagination': 'md-table-pagination',
+}
+const COMPONENT_NAMES = {
+  MdTableToolbar: 'md-table-toolbar',
+  MdTableEmptyState: 'md-table-empty-state',
+  MdTablePagination: 'md-table-pagination',
+}
 
-	function getTag({ componentOptions }) {
-		return componentOptions && componentOptions.tag
-	}
-
-	nodes.forEach((node, index) => {
-		if (node && node.tag) {
-			const tag = getTag(node)
-
-			if (tag && slotNames.includes(tag)) {
-				node.data.slot = tag
-				node.data.attrs = node.data.attrs || {}
-				namedSlots[tag] = () => node
-				nodes.splice(index, 1)
-			}
-		}
-	})
-
-	return {
-		childNodes: nodes,
-		slots: namedSlots,
-	}
+function tagOf(vnode) {
+  const t = vnode && vnode.type
+  if (!t) return null
+  if (typeof t === 'string') return t
+  if (typeof t === 'object') return t.name || null
+  return null
 }
 
 export default {
-	name: "MdTableContainer",
-	functional: true,
-	render(createElement, { data, props, children }) {
-		let slotChildren = []
-		let scopedSlots = data.scopedSlots
+  name: 'MdTableContainer',
+  inheritAttrs: false,
+  render() {
+    const children = this.$slots.default ? this.$slots.default() : []
+    const named = {}
+    const rest = []
 
-		if (children) {
-			const { childNodes, slots } = processChildren(children, createElement)
+    children.forEach((node) => {
+      const tag = tagOf(node)
+      if (!tag) return rest.push(node)
+      if (SLOT_TAGS.includes(tag)) {
+        named[SLOT_NAMES[tag]] = () => [node]
+      } else if (COMPONENT_NAMES[tag]) {
+        named[COMPONENT_NAMES[tag]] = () => [node]
+      } else {
+        rest.push(node)
+      }
+    })
 
-			slotChildren = childNodes
-			scopedSlots = {
-				...scopedSlots,
-				...slots,
-			}
-		}
+    const slots = {
+      ...named,
+      default: () => rest,
+      ...(this.$slots['md-table-row'] ? { 'md-table-row': this.$slots['md-table-row'] } : {}),
+      ...(this.$slots['md-table-alternate-header'] ? { 'md-table-alternate-header': this.$slots['md-table-alternate-header'] } : {}),
+    }
 
-		return createElement(
-			MdTable,
-			{
-				...data,
-				props,
-				scopedSlots,
-			},
-			[slotChildren]
-		)
-	},
+    return h(MdTable, { ...this.$attrs }, slots)
+  },
 }

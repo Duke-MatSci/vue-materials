@@ -1,9 +1,3 @@
-import material from '@/material'
-import MdRipple from './MdRipple.vue'
-import MdWave from './MdWave.vue'
+import MdRipple from "./MdRipple.vue"
 
-export default Vue => {
-  material(Vue)
-  Vue.component(MdRipple.name, MdRipple)
-  Vue.component(MdWave.name, MdWave)
-}
+export default MdRipple

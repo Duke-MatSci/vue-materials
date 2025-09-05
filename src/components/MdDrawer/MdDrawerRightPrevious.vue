@@ -1,17 +1,10 @@
-<template>
-	<div
-		v-show="false"
-		class="md-drawer md-right-previous"
-		:class="drawerClasses"
-	></div>
-</template>
-
 <script>
+import { h } from "vue"
 import MdComponent from "@/core/MdComponent"
 import MdPropValidator from "@/core/utils/MdPropValidator"
 
-export default new MdComponent({
-	name: "MdDrawerRightPrevious",
+export default MdComponent({
+	name: "MdDrawer",
 	props: {
 		mdPermanent: {
 			type: String,
@@ -47,6 +40,16 @@ export default new MdComponent({
 		isTemporary() {
 			return !this.mdPermanent && !this.mdPersistent
 		},
+	},
+	render() {
+		return h(
+			"div",
+			{
+				class: ["md-drawer", "md-right-previous", this.drawerClasses],
+				style: { display: "none" }, // v-show="false" equivalent
+			},
+			[]
+		)
 	},
 })
 </script>

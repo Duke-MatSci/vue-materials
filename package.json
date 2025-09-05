@@ -1,7 +1,7 @@
 {
 	"name": "@duke-matsci/vue-materials",
 	"private": false,
-	"version": "0.0.24",
+	"version": "0.0.401",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -23,6 +23,8 @@
 	"files": [
 		"dist",
 		"dist/theme",
+		"dist/components",
+		"dist/base",
 		"src/base/",
 		"src/components/",
 		"src/core/",
@@ -40,6 +42,10 @@
 		"./dist/style.css": {
 			"import": "./dist/style.css",
 			"require": "./dist/style.css"
+		},
+		"./dist/vue-material.min.css": {
+			"import": "./dist/vue-material.min.css",
+			"require": "./dist/vue-material.min.css"
 		},
 		"./dist/theme/default.css": {
 			"import": "./dist/theme/default.css",
@@ -60,12 +66,24 @@
 		"./dist/theme/engine.scss": {
 			"import": "./dist/theme/engine.scss",
 			"require": "./dist/theme/engine.scss"
+		},
+		"./dist/components": {
+			"import": "./dist/components/index.js",
+			"require": "./dist/components/index.umd.cjs"
+		},
+		"./dist/base": {
+			"import": "./dist/base/theme.scss",
+			"require": "./dist/base/theme.scss"
 		}
 	},
 	"scripts": {
 		"prebuild": "npm version patch --no-git-tag-version",
 		"dev": "vite",
-		"build": "vite build && npm run copy-theme",
+		"build": "node build/lib/index.js",
+		"build:main": "vite build",
+		"build:components": "node build/lib/components.js",
+		"build:themes": "node build/lib/themes.js",
+		"build:base": "node build/lib/copy-base.js",
 		"copy-theme": "mkdir -p dist/theme && cp -r src/theme/* dist/theme/ && cp -r src/css/* dist/theme/",
 		"preview": "vite preview"
 	},
@@ -90,6 +108,6 @@
 		"sass": "^1.62.1",
 		"sass-loader": "^13.3.0",
 		"serve-static": "^1.15.0",
-		"vite": "^4.3.8"
+		"vite": "^4.5.14"
 	}
 }

@@ -1,22 +1,18 @@
 <script>
-	import {h} from 'vue'
-  import MdComponent from '@/core/MdComponent'
+import MdComponent from "@/core/MdComponent"
+import { h } from "vue"
 
-  export default new MdComponent({
-    name: 'MdContent',
-    props: {
-      mdTag: {
-        type: String,
-        default: 'div'
-      }
+export default MdComponent({
+  name: "MdContent",
+  props: {
+    mdTag: {
+      type: String,
+      default: "div",
     },
-    render () {
-			
-      return h(this.mdTag, {
-        class: [this.$mdActiveTheme,'md-content'],
-        attrs: this.$attrs,
-        //on: this.$listeners
-      }, this.$slots.default())
-    }
-  })
+  },
+  render() {
+    const { ref: _r, ...attrs } = this.$attrs || {}
+    return h(this.mdTag, { class: ["md-content", this.$mdActiveTheme], ...attrs }, this.$slots.default ? this.$slots.default() : [])
+  },
+})
 </script>
