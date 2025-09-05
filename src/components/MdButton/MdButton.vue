@@ -151,10 +151,9 @@ export default MdComponent({
 
 		// Add router-specific props if needed
     if (this.isRouterLink) {
-      const exactActiveClass = this.$props.exactActiveClass
-      const activeClass = `${
-        this.$props.activeClass || this.$material.router.linkActiveClass
-      } md-active`
+      const activeClass = this.$props.activeClass || this.$material.router.linkActiveClass
+      const baseExact = this.$props.exactActiveClass || 'router-link-exact-active'
+      const exactActiveClass = `${baseExact} md-active`
       // RouterLink expects its props at the root in Vue 3
       Object.assign(buttonProps, {
         to: this.$props.to,
