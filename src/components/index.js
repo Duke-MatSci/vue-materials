@@ -13,6 +13,7 @@ import MdDrawer from "./MdDrawer"
 import MdTabs from "./MdTabs"
 import MdDialog from "./MdDialog"
 import MdTable from "./MdTable"
+import MdTooltip from "./MdTooltip"
 
 export {
 	MdContent,
@@ -30,4 +31,5 @@ export {
 	MdTabs,
 	MdDialog,
 	MdTable,
+	MdTooltip,
 }
