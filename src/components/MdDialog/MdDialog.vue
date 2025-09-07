@@ -1,5 +1,5 @@
 <script>
-import { h, KeepAlive, Transition } from "vue"
+import { h, KeepAlive, Transition, withDirectives, vShow } from "vue"
 import MdComponent from "@/core/MdComponent"
 import MdPortal from "@/components/MdPortal/MdPortal.vue"
 import MdOverlay from "@/components/MdOverlay/MdOverlay.vue"
@@ -84,21 +84,18 @@ export default MdComponent({
 			[this.$slots.default ? this.$slots.default() : null, overlay]
 		)
 
-    const body = h(
-      "div",
-      { class: "md-dialog", style: this.mdActive ? undefined : { display: "none" } },
-      [
-        h(MdFocusTrap, null, { default: () => [container] }),
-      ]
+    const body = withDirectives(
+      h(
+        "div",
+        { class: "md-dialog" },
+        [ h(MdFocusTrap, null, { default: () => [container] }) ]
+      ),
+      [[vShow, this.mdActive]]
     )
 
 		// Always keep Transition and Teleport (MdPortal) mounted to avoid unmount glitches.
 		// Toggle visibility with v-show on the dialog body. Using `persisted` ensures v-show transitions behave correctly.
-    const content = h(
-      Transition,
-      { name: "md-dialog", appear: this.mdActive, persisted: true },
-      { default: () => body }
-    )
+    const content = h(Transition, { name: "md-dialog", appear: this.mdActive, persisted: true }, { default: () => body })
 
 		return h(MdPortal, null, { default: () => [content] })
 	},

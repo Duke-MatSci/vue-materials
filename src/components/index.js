@@ -12,8 +12,11 @@ import MdSteppers from "./MdSteppers"
 import MdDrawer from "./MdDrawer"
 import MdTabs from "./MdTabs"
 import MdDialog from "./MdDialog"
-import MdTable from "./MdTable"
+// import MdTable from "./MdTable"
 import MdTooltip from "./MdTooltip"
+import MdField from "./MdField"
+import MdSelect from "./MdSelect"
+import MdMenu from "./MdMenu"
 
 export {
 	MdContent,
@@ -30,6 +33,9 @@ export {
 	MdDrawer,
 	MdTabs,
 	MdDialog,
-	MdTable,
+	// MdTable,
 	MdTooltip,
+	MdField,
+	MdSelect,
+	MdMenu,
 }

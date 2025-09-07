@@ -4,6 +4,10 @@
 
 		<!-- Test Button Component -->
 		<div style="margin-top: 20px">
+			<h4>Icons Examples</h4>
+			<TestIcons />
+		</div>
+		<div style="margin-top: 20px">
 			<h4>Button Examples</h4>
 			<TestButton />
 		</div>
@@ -92,6 +96,7 @@
 </template>
 
 <script>
+import TestIcons from "./components/TestIcons.vue"
 import TestButton from "./components/TestButton.vue"
 import TestCard from "./components/TestCard.vue"
 import TestToolbar from "./components/TestToolbar.vue"
@@ -109,6 +114,7 @@ import TestAppFixed from "./components/TestAppFixed.vue"
 export default {
 	name: "MdAppTest",
 	components: {
+		TestIcons,
 		TestButton,
 		TestCard,
 		TestToolbar,

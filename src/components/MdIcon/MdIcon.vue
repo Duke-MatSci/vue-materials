@@ -13,34 +13,27 @@
 
 <script>
 import { h } from "vue"
+import MdSvgLoader from "@/components/MdSvgLoader/MdSvgLoader.vue"
 
 export default {
 	name: "MdIcon",
 	emits: ["md-loaded"],
-	components: {
-		// MdSvgLoader will be created later if needed
-	},
+	components: { MdSvgLoader },
 	props: {
 		mdSrc: String,
 	},
 	setup(props, { slots, emit }) {
 		return () => {
 			if (props.mdSrc) {
-				// For now, we'll use a simple div since MdSvgLoader isn't created yet
 				return h(
-					"div",
-					{
-						class: ["md-icon", "md-icon-image"],
-						onClick: () => emit("md-loaded"),
-					},
-					slots.default ? slots.default() : []
+					MdSvgLoader,
+					{ class: ["md-icon", "md-icon-image"], mdSrc: props.mdSrc, onMdLoaded: () => emit("md-loaded") },
+					{}
 				)
 			} else {
 				return h(
 					"i",
-					{
-						class: ["md-icon", "md-icon-font"],
-					},
+					{ class: ["md-icon", "md-icon-font"] },
 					slots.default ? slots.default() : []
 				)
 			}

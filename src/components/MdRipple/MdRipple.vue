@@ -17,6 +17,7 @@ export default {
     const ripples = ref([])
     const touchTimeout = ref(null)
     const eventType = ref(null)
+    const rootEl = ref(null)
 
     const isDisabled = computed(() => props.mdDisabled)
     const rippleClasses = computed(() => ({ "md-disabled": isDisabled.value }))
@@ -47,8 +48,8 @@ export default {
     const startRipple = ($event) => {
       requestAnimationFrame(() => {
         if (!isDisabled.value && (!eventType.value || eventType.value === $event.type)) {
-          let size = getSize()
-          let position = props.mdCentered ? getCenteredPosition(size) : getHitPosition($event, size)
+          const size = getSize()
+          const position = props.mdCentered ? getCenteredPosition(size) : getHitPosition($event, size)
           eventType.value = $event.type
           ripples.value.push({ waveStyles: applyStyles(position, size), uuid: generateUuid() })
         }
@@ -65,9 +66,28 @@ export default {
         ripples.value = []
       }
     }
-    const getSize = () => 100
+    const getSize = () => {
+      const el = rootEl.value
+      if (!el) return 0
+      const { offsetWidth, offsetHeight } = el
+      return Math.round(Math.max(offsetWidth, offsetHeight))
+    }
     const getCenteredPosition = (size) => ({ "margin-top": -size / 2 + "px", "margin-left": -size / 2 + "px" })
-    const getHitPosition = ($event, elementSize) => ({ top: "50%", left: "50%" })
+    const getHitPosition = ($event, elementSize) => {
+      const el = rootEl.value
+      if (!el) return { top: "50%", left: "50%" }
+      const rect = el.getBoundingClientRect()
+      let top = $event.pageY
+      let left = $event.pageX
+      if ($event.type === "touchstart" && $event.changedTouches && $event.changedTouches[0]) {
+        top = $event.changedTouches[0].pageY
+        left = $event.changedTouches[0].pageX
+      }
+      return {
+        top: top - rect.top - elementSize / 2 - document.documentElement.scrollTop + "px",
+        left: left - rect.left - elementSize / 2 - document.documentElement.scrollLeft + "px",
+      }
+    }
     const generateUuid = () => Math.random().toString(36).substr(2, 9)
 
     return () =>
@@ -83,6 +103,12 @@ export default {
               class: [externalClass, "md-ripple", rippleClasses.value],
             }
           })(),
+          onVnodeMounted: (vnode) => {
+            rootEl.value = vnode && vnode.el ? vnode.el : null
+          },
+          onVnodeUnmounted: () => {
+            rootEl.value = null
+          },
           onTouchstartPassive: (event) => props.mdEventTrigger && touchStartCheck(event),
           onTouchmovePassive: (event) => props.mdEventTrigger && touchMoveCheck(event),
           onMousedownPassive: (event) => props.mdEventTrigger && startRipple(event),

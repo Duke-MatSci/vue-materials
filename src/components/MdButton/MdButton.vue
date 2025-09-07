@@ -109,27 +109,23 @@ export default MdComponent({
   render() {
     // Inherit external attrs and merge classes cleanly
     const { class: externalClass, ...externalAttrs } = this.$attrs || {}
-    // Build the ripple content structure directly
-    const rippleContent = h("div", { class: "md-ripple" }, [
-      h(
-        "div",
-        { class: "md-button-content" },
-        this.$slots.default ? this.$slots.default() : []
-      ),
-      h("div"), // Empty div for ripple wave
-    ])
-
-		// Build the ripple component with proper props
-		const rippleComponent = h(
-			"md-ripple",
-			{
-				mdDisabled: !this.mdRipple || this.disabled,
-				mdEventTrigger: false,
-				mdActive: this.rippleActive,
-				onUpdateMdActive: this.handleRippleActiveUpdate,
-			},
-			[rippleContent]
-		)
+    // Build ripple + content (mirror Vue 2 structure)
+    const content = h(
+      "div",
+      { class: "md-button-content" },
+      this.$slots.default ? this.$slots.default() : []
+    )
+    const rippleComponent = h(
+      "md-ripple",
+      {
+        mdDisabled: !this.mdRipple || this.disabled,
+        mdEventTrigger: false,
+        mdActive: this.rippleActive,
+        // Vue 3 event prop syntax
+        "onUpdate:mdActive": this.handleRippleActiveUpdate,
+      },
+      { default: () => [content] }
+    )
 
 		// Build button attributes - separate props from events
     const baseClass = [this.buttonClasses, externalClass]
@@ -142,12 +138,19 @@ export default MdComponent({
     }
 
 		// Build event handlers using Vue 3 event system
-		const buttonEvents = {
-			onTouchstart: this.handleTouchStart,
-			onTouchmove: this.handleTouchMove,
-			onMousedown: this.handleMouseDown,
-			onClick: (event) => this.$emit("click", event),
-		}
+    const buttonEvents = {
+      onTouchstart: this.handleTouchStart,
+      onTouchmove: this.handleTouchMove,
+      onMousedown: this.handleMouseDown,
+      onClick: (event) => {
+        if (this.disabled) {
+          if (event && event.preventDefault) event.preventDefault()
+          event && event.stopPropagation && event.stopPropagation()
+          return
+        }
+        this.$emit("click", event)
+      },
+    }
 
 		// Add router-specific props if needed
     if (this.isRouterLink) {
@@ -168,8 +171,11 @@ export default MdComponent({
       // Remove conflicting native props
       delete buttonProps.type
       delete buttonProps.href
-      // Do not forward `disabled` to RouterLink/anchor to avoid pointer-events:none CSS
-      if (!this.disabled) {
+      // RouterLink doesn't support disabled natively; keep attribute when disabled for CSS and add ARIA hooks
+      if (this.disabled) {
+        buttonProps["aria-disabled"] = "true"
+        buttonProps.tabindex = -1
+      } else {
         delete buttonProps.disabled
       }
     }
