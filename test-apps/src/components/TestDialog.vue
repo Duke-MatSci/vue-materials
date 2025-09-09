@@ -3,7 +3,7 @@
 		<md-dialog v-model:mdActive="showDialog">
 			<md-dialog-title>Preferences</md-dialog-title>
 
-			<md-tabs md-dynamic-height md-active-tab="general">
+			<!-- <md-tabs md-dynamic-height md-active-tab="general">
 				<md-tab id="general" md-label="General">
 					<p>
 						Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ullam
@@ -72,7 +72,7 @@
 						inventore ducimus ipsa aut.
 					</p>
 				</md-tab>
-			</md-tabs>
+			</md-tabs> -->
 
 			<md-dialog-actions>
 				<md-button class="md-primary" @click="showDialog = false"

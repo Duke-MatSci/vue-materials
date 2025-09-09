@@ -1,7 +1,7 @@
 {
 	"name": "@duke-matsci/vue-materials",
 	"private": false,
-	"version": "0.0.413",
+	"version": "0.0.445",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -94,8 +94,7 @@
 		"is-promise": "^4.0.0",
 		"popper.js": "^1.15.0",
 		"raf": "^3.4.1",
-		"rollup-plugin-copy": "^3.5.0",
-		"vue": "^3.0.0"
+		"rollup-plugin-copy": "^3.5.0"
 	},
 	"peerDependencies": {
 		"vue": "^3.0.0"

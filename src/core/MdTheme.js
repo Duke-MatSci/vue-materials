@@ -1,4 +1,4 @@
-import { reactive, computed, watch, onMounted } from "vue"
+import { reactive, computed, watch } from "vue"
 
 let msColor = null
 let themeColor = null
@@ -133,19 +133,17 @@ watch(
 	}
 )
 
-// Initialize on mount
+// Initialize immediately (module scope) when running in browser
 if (typeof document !== "undefined") {
-	onMounted(() => {
-		msColor = document.querySelector('[name="msapplication-TileColor"]')
-		themeColor = document.querySelector('[name="theme-color"]')
-		maskIcon = document.querySelector('[rel="mask-icon"]')
+  msColor = document.querySelector('[name="msapplication-TileColor"]')
+  themeColor = document.querySelector('[name="theme-color"]')
+  maskIcon = document.querySelector('[rel="mask-icon"]')
 
-		if (themeData.enabled && themeData.metaColors) {
-			window.addEventListener("load", () => {
-				setHtmlMetaColors(fullThemeName.value)
-			})
-		}
-	})
+  if (themeData.enabled && themeData.metaColors) {
+    window.addEventListener("load", () => {
+      setHtmlMetaColors(fullThemeName.value)
+    })
+  }
 }
 
 export default {

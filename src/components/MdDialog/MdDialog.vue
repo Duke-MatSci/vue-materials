@@ -1,14 +1,15 @@
 <script>
-import { h, KeepAlive, Transition, withDirectives, vShow } from "vue"
+import { h, Transition } from "vue"
 import MdComponent from "@/core/MdComponent"
 import MdPortal from "@/components/MdPortal/MdPortal.vue"
 import MdOverlay from "@/components/MdOverlay/MdOverlay.vue"
 import MdFocusTrap from "@/components/MdFocusTrap/MdFocusTrap.vue"
+import MdDialogRender from "./MdDialogRender.js"
 
 export default MdComponent({
 	name: "MdDialog",
 	inheritAttrs: false,
-	components: { MdPortal, MdOverlay, MdFocusTrap },
+	components: { MdPortal, MdOverlay, MdFocusTrap, MdDialogRender },
 	props: {
 		mdActive: Boolean,
 		mdBackdrop: { type: Boolean, default: true },
@@ -55,19 +56,16 @@ export default MdComponent({
 	},
 	render() {
 		const overlay = this.mdBackdrop
-			? h(KeepAlive, null, {
-					default: () =>
-						h(
-							MdOverlay,
-							{
-								class: this.mdBackdropClass,
-								mdFixed: true,
-								mdActive: this.mdActive,
-								onClick: this.onClick,
-							},
-							null
-						),
-			  })
+			? h(
+					MdOverlay,
+					{
+						class: this.mdBackdropClass,
+						mdFixed: true,
+						mdActive: this.mdActive,
+						onClick: this.onClick,
+					},
+					null
+			  )
 			: null
 
 		const container = h(
@@ -81,23 +79,30 @@ export default MdComponent({
 				onKeydown: this.onEsc,
 				...this.$attrs,
 			},
-			[this.$slots.default ? this.$slots.default() : null, overlay]
+			[this.$slots.default ? this.$slots.default() : null]
 		)
 
-    const body = withDirectives(
-      h(
-        "div",
-        { class: "md-dialog" },
-        [ h(MdFocusTrap, null, { default: () => [container] }) ]
-      ),
-      [[vShow, this.mdActive]]
-    )
+		// Place overlay as a sibling of the container inside the dialog body (not a child of the container)
+		const body = h("div", { class: "md-dialog", key: "md-dialog" }, [
+			overlay,
+			h(MdFocusTrap, null, { default: () => [container] }),
+		])
 
-		// Always keep Transition and Teleport (MdPortal) mounted to avoid unmount glitches.
-		// Toggle visibility with v-show on the dialog body. Using `persisted` ensures v-show transitions behave correctly.
-    const content = h(Transition, { name: "md-dialog", appear: this.mdActive, persisted: true }, { default: () => body })
+		// Always create Transition wrapper; control child presence via slot to mirror Vue 2
+		const content = h(
+			Transition,
+			{ name: "md-dialog" },
+			{ default: () => (this.mdActive ? body : null) }
+		)
 
-		return h(MdPortal, null, { default: () => [content] })
+		const portal = h(MdPortal, null, { default: () => [content] })
+
+		// Wrap with MdDialogRender to mirror Vue 2 behavior for mount/unmount and optional keep-alive/v-show
+		return h(
+			MdDialogRender,
+			{ mdValue: this.mdActive, mdKeepAlive: this.mdKeepAlive },
+			{ default: () => [portal] }
+		)
 	},
 })
 </script>

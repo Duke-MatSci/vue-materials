@@ -3,7 +3,6 @@ import { h } from "vue"
 
 export default {
   name: "MdFocusTrap",
-  abstract: true,
   methods: {
     setFocus() {
       window.setTimeout(() => {
@@ -35,4 +34,3 @@ export default {
   },
 }
 </script>
-

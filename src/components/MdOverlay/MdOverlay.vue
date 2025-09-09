@@ -18,7 +18,7 @@ export default {
     },
   },
   render() {
-    // Keep MdPortal mounted at all times; toggle child content inside Transition
+    // Vue 2 parity: only render overlay element when active, wrapped in Transition
     const child = h(
       Transition,
       { name: "md-overlay" },
@@ -29,6 +29,7 @@ export default {
                 "div",
                 {
                   class: ["md-overlay", this.overlayClasses],
+                  key: "md-overlay",
                   onClick: (e) => this.$emit && this.$emit("click", e),
                 },
                 []
@@ -38,11 +39,7 @@ export default {
       }
     )
 
-    return h(
-      MdPortal,
-      { mdAttachToParent: this.mdAttachToParent },
-      { default: () => [child] }
-    )
+    return h(MdPortal, { mdAttachToParent: this.mdAttachToParent }, { default: () => [child] })
   },
 }
 </script>

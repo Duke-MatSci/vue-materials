@@ -24,11 +24,12 @@ async function buildLibrary() {
 	try {
 		// Build main library first
 		console.log("📦 Building main library...")
-		await build({
-			configFile: resolve(rootDir, "vite.config.js"),
-			build: {
-				outDir: distDir,
-				emptyOutDir: false, // Don't clean the dist directory
+    await build({
+      configFile: resolve(rootDir, "vite.config.js"),
+      build: {
+        outDir: distDir,
+        emptyOutDir: false, // Don't clean the dist directory
+        sourcemap: true,
 				lib: {
 					entry: resolve(rootDir, "src/index.js"),
 					name: "VueMaterials",
@@ -55,9 +56,9 @@ async function buildLibrary() {
 						warn(warning)
 					},
 				},
-				cssCodeSplit: false, // Disable CSS code splitting
-			},
-		})
+        cssCodeSplit: false, // Disable CSS code splitting
+      },
+    })
 
 		console.log("✅ Main library built successfully")
 

@@ -35,11 +35,11 @@
 			<h4>Drawer Examples</h4>
 			<TestDrawer />
 		</div> -->
-		<!-- <div style="margin-top: 20px">
+		<div style="margin-top: 20px">
 			<h4>Dialog Examples</h4>
 			<TestDialog />
 		</div>
-		<div style="margin-top: 20px">
+		<!-- <div style="margin-top: 20px">
 			<h4>Tabs Examples (Standalone)</h4>
 			<TestTabs />
 		</div> -->
@@ -104,7 +104,7 @@ import TestList from "./components/TestList.vue"
 import TestSnack from "./components/TestSnack.vue"
 import TestStepper from "./components/TestStepper.vue"
 // import TestDrawer from "./components/TestDrawer.vue"
-// import TestDialog from "./components/TestDialog.vue"
+import TestDialog from "./components/TestDialog.vue"
 // import TestTabs from "./components/TestTabs.vue"
 import TestAppFixed from "./components/TestAppFixed.vue"
 // import TestAppFlexible from "./components/TestAppFlexible.vue"
@@ -122,7 +122,7 @@ export default {
 		TestSnack,
 		TestStepper,
 		// TestDrawer,
-		// TestDialog,
+		TestDialog,
 		// TestTabs,
 		TestAppFixed,
 		// TestAppFlexible,

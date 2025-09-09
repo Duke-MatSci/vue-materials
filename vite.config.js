@@ -6,6 +6,9 @@ const base = "/"
 
 export default defineConfig({
 	base,
+	define: {
+		__VERSION__: JSON.stringify(process.env.npm_package_version),
+	},
 	plugins: [
 		vuePlugin({
 			// Ensure Vue plugin doesn't bundle Vue
@@ -78,6 +81,7 @@ export default defineConfig({
 			},
 		},
 		outDir: "dist",
+		sourcemap: true,
 		emptyOutDir: false, // Don't clean the dist directory by default
 		cssCodeSplit: false, // Disable CSS code splitting
 	},

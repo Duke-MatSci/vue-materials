@@ -74,11 +74,12 @@ export default async function generateComponents() {
 			console.log(`  🔨 Building ${component}...`)
 
 			// Build individual component
-			await build({
-				configFile: resolve(rootDir, "vite.component.config.js"),
-				build: {
-					outDir: componentDir,
-					emptyOutDir: false, // Don't clean the component directory
+      await build({
+        configFile: resolve(rootDir, "vite.component.config.js"),
+        build: {
+          outDir: componentDir,
+          emptyOutDir: false, // Don't clean the component directory
+          sourcemap: true,
 					lib: {
 						entry: resolve(componentsSrcDir, component, "index.js"),
 						name: `VueMaterials${component}`,
@@ -106,11 +107,12 @@ export default async function generateComponents() {
 	// Build components index
 	try {
 		console.log("  🔨 Building components index...")
-		await build({
-			configFile: resolve(rootDir, "vite.component.config.js"),
-			build: {
-				outDir: componentsDistDir,
-				emptyOutDir: false, // Don't clean the components directory
+      await build({
+        configFile: resolve(rootDir, "vite.component.config.js"),
+        build: {
+          outDir: componentsDistDir,
+          emptyOutDir: false, // Don't clean the components directory
+          sourcemap: true,
 				lib: {
 					entry: resolve(componentsSrcDir, "index.js"),
 					name: "VueMaterialsComponents",

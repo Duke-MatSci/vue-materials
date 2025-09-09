@@ -1,5 +1,6 @@
 import material from "./material"
 import * as MdComponents from "./components"
+import pkg from "../package.json" assert { type: "json" }
 
 const VueMaterial = {
 	install(app) {
@@ -13,7 +14,7 @@ const VueMaterial = {
 	},
 }
 
-VueMaterial.version = "__VERSION__"
+VueMaterial.version = pkg.version || "0.0.0"
 
 export default VueMaterial
 
