@@ -1,15 +1,12 @@
 <script>
-import { h, Transition } from "vue"
+import { h, Transition, Teleport } from "vue"
 import MdComponent from "@/core/MdComponent"
-import MdPortal from "@/components/MdPortal/MdPortal.vue"
-import MdOverlay from "@/components/MdOverlay/MdOverlay.vue"
 import MdFocusTrap from "@/components/MdFocusTrap/MdFocusTrap.vue"
-import MdDialogRender from "./MdDialogRender.js"
 
 export default MdComponent({
 	name: "MdDialog",
 	inheritAttrs: false,
-	components: { MdPortal, MdOverlay, MdFocusTrap, MdDialogRender },
+	components: { MdFocusTrap },
 	props: {
 		mdActive: Boolean,
 		mdBackdrop: { type: Boolean, default: true },
@@ -32,11 +29,8 @@ export default MdComponent({
 		mdActive(isActive) {
 			this.$nextTick().then(() => {
 				this.$emit(isActive ? "md-opened" : "md-closed")
-				if (isActive && this.mdKeepAlive) {
-					// Mirror old behavior: dispatch resize when showing a kept-alive dialog
-					if (typeof window !== "undefined") {
-						window.dispatchEvent(new Event("resize"))
-					}
+				if (isActive && this.mdKeepAlive && typeof window !== "undefined") {
+					window.dispatchEvent(new Event("resize"))
 				}
 			})
 		},
@@ -55,16 +49,27 @@ export default MdComponent({
 		},
 	},
 	render() {
-		const overlay = this.mdBackdrop
+		// Overlay teleported sibling: behind dialog (z-index lower)
+		const overlayVNode = this.mdBackdrop
 			? h(
-					MdOverlay,
+					Transition,
+					{ name: "md-overlay", persisted: true },
 					{
-						class: this.mdBackdropClass,
-						mdFixed: true,
-						mdActive: this.mdActive,
-						onClick: this.onClick,
-					},
-					null
+						default: () =>
+							h(
+								"div",
+								{
+									class: [
+										"md-overlay",
+										this.mdBackdropClass,
+										{ "md-fixed": true },
+									],
+									style: this.mdActive ? undefined : { display: "none" },
+									onClick: this.onClick,
+								},
+								[]
+							),
+					}
 			  )
 			: null
 
@@ -82,26 +87,28 @@ export default MdComponent({
 			[this.$slots.default ? this.$slots.default() : null]
 		)
 
-		// Place overlay as a sibling of the container inside the dialog body (not a child of the container)
-		const body = h("div", { class: "md-dialog", key: "md-dialog" }, [
-			overlay,
-			h(MdFocusTrap, null, { default: () => [container] }),
-		])
-
-		// Always create Transition wrapper; control child presence via slot to mirror Vue 2
-		const content = h(
+		// Dialog teleported sibling: above overlay
+		const dialogVNode = h(
 			Transition,
-			{ name: "md-dialog" },
-			{ default: () => (this.mdActive ? body : null) }
+			{ name: "md-dialog", persisted: true },
+			{
+				default: () =>
+					h(
+						"div",
+						{
+							class: "md-dialog",
+							style: this.mdActive ? undefined : { display: "none" },
+							key: "md-dialog",
+						},
+						[h(MdFocusTrap, null, { default: () => [container] })]
+					),
+			}
 		)
 
-		const portal = h(MdPortal, null, { default: () => [content] })
-
-		// Wrap with MdDialogRender to mirror Vue 2 behavior for mount/unmount and optional keep-alive/v-show
 		return h(
-			MdDialogRender,
-			{ mdValue: this.mdActive, mdKeepAlive: this.mdKeepAlive },
-			{ default: () => [portal] }
+			Teleport,
+			{ to: "body" },
+			overlayVNode ? [overlayVNode, dialogVNode] : [dialogVNode]
 		)
 	},
 })

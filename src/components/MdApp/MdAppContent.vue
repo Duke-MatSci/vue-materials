@@ -10,11 +10,11 @@ export default {
     showCard() { return this.MdApp.options && this.MdApp.options.mode === "overlap" },
   },
   render() {
-    const children = this.$slots.default ? this.$slots.default() : []
+    const slotObj = this.$slots.default ? { default: () => this.$slots.default() } : undefined
     if (this.showCard) {
-      return h(MdCard, { class: "md-app-content md-flex", ...this.$attrs }, children)
+      return h(MdCard, { class: "md-app-content md-flex", ...this.$attrs }, slotObj)
     }
-    return h(MdContent, { class: "md-app-content md-flex", ...this.$attrs }, children)
+    return h(MdContent, { class: "md-app-content md-flex", ...this.$attrs }, slotObj)
   },
 }
 </script>
@@ -23,4 +23,3 @@ export default {
 .md-app-content { min-height: 100%; }
 .md-app-content .md-card { margin-right: 16px; margin-left: 16px; overflow: visible; }
 </style>
-

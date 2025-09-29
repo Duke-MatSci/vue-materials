@@ -22,25 +22,22 @@ export default MdComponent({
 		})
 
 		return () => {
-			// Get the component instance to access $mdActiveTheme
 			const instance = getCurrentInstance()
+			const rawAttrs = instance && instance.proxy ? instance.proxy.$attrs || {} : {}
+			const { class: externalClass, style: externalStyle, ...restAttrs } = rawAttrs
 
-			// Build the card classes exactly as in the old Vue 2 version
-			// Now using $mdActiveTheme provided by MdComponent
-			const allClasses = ["md-card"]
-
-			// Add theme class if available (provided by MdComponent)
+			const classes = ["md-card"]
 			if (instance && instance.proxy && instance.proxy.$mdActiveTheme) {
-				allClasses.push(instance.proxy.$mdActiveTheme)
+				classes.push(instance.proxy.$mdActiveTheme)
 			}
-
-			// Add computed card classes
-			allClasses.push(cardClasses.value)
+			classes.push(cardClasses.value)
 
 			return h(
 				"div",
 				{
-					class: allClasses,
+					...restAttrs,
+					class: [externalClass, classes],
+					style: externalStyle,
 				},
 				slots && slots.default ? slots.default() : []
 			)

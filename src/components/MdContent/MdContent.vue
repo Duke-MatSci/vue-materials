@@ -11,8 +11,25 @@ export default MdComponent({
     },
   },
   render() {
-    const { ref: _r, ...attrs } = this.$attrs || {}
-    return h(this.mdTag, { class: ["md-content", this.$mdActiveTheme], ...attrs }, this.$slots.default ? this.$slots.default() : [])
+    const raw = this.$attrs || {}
+    const {
+      ref: _ref_omit,
+      ref_for: _rf,
+      ref_key: _rk,
+      class: externalClass,
+      style: externalStyle,
+      ...attrs
+    } = raw
+    const slots = this.$slots.default ? { default: () => this.$slots.default() } : undefined
+    return h(
+      this.mdTag,
+      {
+        ...attrs,
+        class: [externalClass, "md-content", this.$mdActiveTheme],
+        style: externalStyle,
+      },
+      slots
+    )
   },
 })
 </script>

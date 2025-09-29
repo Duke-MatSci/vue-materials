@@ -1,7 +1,8 @@
 <script>
-import { h, nextTick, Teleport } from "vue"
+import { h, nextTick } from "vue"
 import Popper from "popper.js"
 import deepmerge from "deepmerge"
+import MdPortal from "@/components/MdPortal/MdPortal.vue"
 
 export default {
   name: "MdPopover",
@@ -145,14 +146,18 @@ export default {
           this.$slots.default ? this.$slots.default() : []
         )
       : null
-    const teleported = this.toEl
-      ? h(Teleport, { to: this.toEl }, body ? [body] : [])
-      : (body || null)
-    // Single root wrapper as an invisible anchor with vnode mount hooks (no ref)
+
+    // Anchor element as wrapper; portal teleports body to computed target
+    const portal = h(
+      MdPortal,
+      { mdTarget: this.toEl },
+      { default: () => (body ? [body] : []) }
+    )
+
     return h(
       "span",
       { style: { display: "contents" }, onVnodeMounted: this.handleAnchorMount, onVnodeUnmounted: this.handleAnchorUnmount },
-      teleported ? [teleported] : []
+      [portal]
     )
   },
 }

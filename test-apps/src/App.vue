@@ -32,6 +32,10 @@
 			<TestStepper />
 		</div>
 		<!-- <div style="margin-top: 20px">
+			<h4>Forms Examples</h4>
+			<TestField />
+		</div> -->
+		<!-- <div style="margin-top: 20px">
 			<h4>Drawer Examples</h4>
 			<TestDrawer />
 		</div> -->
@@ -51,14 +55,14 @@
 			<h4>App Flexible Examples</h4>
 			<TestAppFlexible />
 		</div> -->
-		<!-- <div style="margin-top: 20px">
+		<div style="margin-top: 20px">
 			<h4>Table Examples</h4>
 			<TestTable />
 		</div>
 		<div style="margin-top: 20px">
 			<h4>Table Pagination Examples</h4>
 			<TestTablePagination />
-		</div> -->
+		</div>
 		<!-- Commented out until components are migrated -->
 		<!--
 		<MdApp md-mode="reveal">
@@ -103,13 +107,14 @@ import TestToolbar from "./components/TestToolbar.vue"
 import TestList from "./components/TestList.vue"
 import TestSnack from "./components/TestSnack.vue"
 import TestStepper from "./components/TestStepper.vue"
+// import TestField from "./components/TestField.vue"
 // import TestDrawer from "./components/TestDrawer.vue"
 import TestDialog from "./components/TestDialog.vue"
 // import TestTabs from "./components/TestTabs.vue"
 import TestAppFixed from "./components/TestAppFixed.vue"
 // import TestAppFlexible from "./components/TestAppFlexible.vue"
-// import TestTable from "./components/TestTable.vue"
-// import TestTablePagination from "./components/TestTablePagination.vue"
+import TestTable from "./components/TestTable.vue"
+import TestTablePagination from "./components/TestTablePagination.vue"
 
 export default {
 	name: "MdAppTest",
@@ -121,13 +126,14 @@ export default {
 		TestList,
 		TestSnack,
 		TestStepper,
+		// TestField,
 		// TestDrawer,
 		TestDialog,
 		// TestTabs,
 		TestAppFixed,
 		// TestAppFlexible,
-		// TestTable,
-		// TestTablePagination,
+		TestTable,
+		TestTablePagination,
 	},
 	data() {
 		return {

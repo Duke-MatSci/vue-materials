@@ -31,11 +31,8 @@ export default {
     const klass = ["md-app-toolbar", this.toolbarClasses, attrsClass]
     const style = [this.toolbarStyles, attrsStyle]
 
-    return h(
-      MdToolbar,
-      { ...rest, class: klass, style },
-      this.$slots.default ? this.$slots.default() : []
-    )
+    const slots = this.$slots.default ? { default: () => this.$slots.default() } : undefined
+    return h(MdToolbar, { ...rest, class: klass, style }, slots)
   },
 }
 </script>

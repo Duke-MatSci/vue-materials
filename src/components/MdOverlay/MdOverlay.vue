@@ -18,27 +18,18 @@ export default {
     },
   },
   render() {
-    // Vue 2 parity: only render overlay element when active, wrapped in Transition
-    const child = h(
-      Transition,
-      { name: "md-overlay" },
+    const overlayDiv = h(
+      "div",
       {
-        default: () => (
-          this.mdActive
-            ? h(
-                "div",
-                {
-                  class: ["md-overlay", this.overlayClasses],
-                  key: "md-overlay",
-                  onClick: (e) => this.$emit && this.$emit("click", e),
-                },
-                []
-              )
-            : null
-        ),
-      }
+        class: ["md-overlay", this.overlayClasses],
+        key: "md-overlay",
+        style: this.mdActive ? undefined : { display: "none" },
+        onClick: (e) => this.$emit && this.$emit("click", e),
+      },
+      []
     )
 
+    const child = h(Transition, { name: "md-overlay", persisted: true }, { default: () => overlayDiv })
     return h(MdPortal, { mdAttachToParent: this.mdAttachToParent }, { default: () => [child] })
   },
 }

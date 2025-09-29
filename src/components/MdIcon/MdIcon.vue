@@ -25,11 +25,11 @@ export default {
 	setup(props, { slots, emit }) {
 		return () => {
 			if (props.mdSrc) {
-				return h(
-					MdSvgLoader,
-					{ class: ["md-icon", "md-icon-image"], mdSrc: props.mdSrc, onMdLoaded: () => emit("md-loaded") },
-					{}
-				)
+            return h(
+              MdSvgLoader,
+              { class: ["md-icon", "md-icon-image"], mdSrc: props.mdSrc, onMdLoaded: () => emit("md-loaded") },
+              {}
+            )
 			} else {
 				return h(
 					"i",

@@ -51,8 +51,8 @@ export default {
   },
   beforeUnmount() { this.clearDrawerData() },
   render() {
-    return h(MdDrawer, { class: "md-app-drawer", mdActive: this.mdActive && this.initialized, mdRight: this.mdRight, ...this.$attrs }, this.$slots.default ? this.$slots.default() : [])
+    const slots = this.$slots.default ? { default: () => this.$slots.default() } : undefined
+    return h(MdDrawer, { class: "md-app-drawer", mdActive: this.mdActive && this.initialized, mdRight: this.mdRight, ...this.$attrs }, slots)
   },
 }
 </script>
-
