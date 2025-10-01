@@ -13,11 +13,12 @@ import MdDrawer from "./MdDrawer"
 import MdTabs from "./MdTabs"
 import MdDialog from "./MdDialog"
 import MdEmptyState from "./MdEmptyState"
-import MdTable from "./MdTable"
 import MdTooltip from "./MdTooltip"
 import MdField from "./MdField"
 import MdMenu from "./MdMenu"
 import MdCheckbox from "./MdCheckbox"
+import MdTable from "./MdTable"
+import MdProgress from "./MdProgress"
 
 export {
 	MdContent,
@@ -35,9 +36,10 @@ export {
 	MdTabs,
 	MdDialog,
 	MdEmptyState,
-	MdTable,
 	MdTooltip,
 	MdField,
 	MdMenu,
 	MdCheckbox,
+	MdTable,
+	MdProgress,
 }

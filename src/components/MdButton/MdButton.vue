@@ -2,12 +2,11 @@
 import { h, resolveComponent } from "vue"
 import MdComponent from "../../core/MdComponent"
 import MdFocused from "../../core/mixins/MdFocused/MdFocused"
-import MdRipple from "../../core/mixins/MdRipple/MdRipple"
 import MdRouterLink from "../../core/mixins/MdRouterLink/MdRouterLink"
 
 export default MdComponent({
 	name: "MdButton",
-	mixins: [MdRipple, MdFocused, MdRouterLink],
+	mixins: [MdFocused, MdRouterLink],
   props: {
 		href: String,
 		type: {
@@ -73,6 +72,7 @@ export default MdComponent({
 				{
 					"md-ripple-off": !this.mdRipple,
 					"md-focused": this.mdHasFocus,
+					"md-disabled": this.disabled,
 				},
 			]
 		},

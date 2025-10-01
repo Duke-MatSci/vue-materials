@@ -29,7 +29,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../../components/MdAnimation/variables";
+@import "@/components/MdAnimation/variables";
 
 .md-ripple-enter-active {
 	transition: 0.8s $md-transition-stand-timing;

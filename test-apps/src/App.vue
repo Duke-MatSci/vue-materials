@@ -63,6 +63,10 @@
 			<h4>Table Pagination Examples</h4>
 			<TestTablePagination />
 		</div>
+		<div style="margin-top: 20px">
+			<h4>Progress Examples</h4>
+			<TestProgress />
+		</div>
 		<!-- Commented out until components are migrated -->
 		<!--
 		<MdApp md-mode="reveal">
@@ -115,6 +119,7 @@ import TestAppFixed from "./components/TestAppFixed.vue"
 // import TestAppFlexible from "./components/TestAppFlexible.vue"
 import TestTable from "./components/TestTable.vue"
 import TestTablePagination from "./components/TestTablePagination.vue"
+import TestProgress from "./components/TestProgress.vue"
 
 export default {
 	name: "MdAppTest",
@@ -134,6 +139,7 @@ export default {
 		// TestAppFlexible,
 		TestTable,
 		TestTablePagination,
+		TestProgress,
 	},
 	data() {
 		return {
