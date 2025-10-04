@@ -9,6 +9,7 @@ import MdList from "./MdList"
 import MdDivider from "./MdDivider"
 import MdSnackbar from "./MdSnackbar"
 import MdSteppers from "./MdSteppers"
+import MdSwitch from "./MdSwitch"
 import MdDrawer from "./MdDrawer"
 import MdTabs from "./MdTabs"
 import MdDialog from "./MdDialog"
@@ -19,6 +20,8 @@ import MdMenu from "./MdMenu"
 import MdCheckbox from "./MdCheckbox"
 import MdTable from "./MdTable"
 import MdProgress from "./MdProgress"
+import MdRadio from "./MdRadio"
+import MdChips from "./MdChips"
 
 export {
 	MdContent,
@@ -32,6 +35,7 @@ export {
 	MdDivider,
 	MdSnackbar,
 	MdSteppers,
+	MdSwitch,
 	MdDrawer,
 	MdTabs,
 	MdDialog,
@@ -42,4 +46,6 @@ export {
 	MdCheckbox,
 	MdTable,
 	MdProgress,
+	MdRadio,
+	MdChips,
 }

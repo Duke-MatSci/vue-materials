@@ -3,6 +3,7 @@ node_modules
 /dist
 /DO_NOT_USE
 /.cursor
+/.claude
 
 # local env files
 .env.local

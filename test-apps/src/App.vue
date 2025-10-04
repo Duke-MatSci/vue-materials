@@ -31,10 +31,10 @@
 			<h4>Stepper Examples</h4>
 			<TestStepper />
 		</div>
-		<!-- <div style="margin-top: 20px">
+		<div style="margin-top: 20px">
 			<h4>Forms Examples</h4>
 			<TestField />
-		</div> -->
+		</div>
 		<!-- <div style="margin-top: 20px">
 			<h4>Drawer Examples</h4>
 			<TestDrawer />
@@ -66,6 +66,22 @@
 		<div style="margin-top: 20px">
 			<h4>Progress Examples</h4>
 			<TestProgress />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Select Examples</h4>
+			<TestSelect />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Switch Examples</h4>
+			<TestSwitch />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Radio Examples</h4>
+			<TestRadio />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Chips Examples</h4>
+			<TestChips />
 		</div>
 		<!-- Commented out until components are migrated -->
 		<!--
@@ -111,7 +127,7 @@ import TestToolbar from "./components/TestToolbar.vue"
 import TestList from "./components/TestList.vue"
 import TestSnack from "./components/TestSnack.vue"
 import TestStepper from "./components/TestStepper.vue"
-// import TestField from "./components/TestField.vue"
+import TestField from "./components/TestField.vue"
 // import TestDrawer from "./components/TestDrawer.vue"
 import TestDialog from "./components/TestDialog.vue"
 // import TestTabs from "./components/TestTabs.vue"
@@ -120,6 +136,10 @@ import TestAppFixed from "./components/TestAppFixed.vue"
 import TestTable from "./components/TestTable.vue"
 import TestTablePagination from "./components/TestTablePagination.vue"
 import TestProgress from "./components/TestProgress.vue"
+import TestSelect from "./components/TestSelect.vue"
+import TestSwitch from "./components/TestSwitch.vue"
+import TestRadio from "./components/TestRadio.vue"
+import TestChips from "./components/TestChips.vue"
 
 export default {
 	name: "MdAppTest",
@@ -131,7 +151,7 @@ export default {
 		TestList,
 		TestSnack,
 		TestStepper,
-		// TestField,
+		TestField,
 		// TestDrawer,
 		TestDialog,
 		// TestTabs,
@@ -140,6 +160,10 @@ export default {
 		TestTable,
 		TestTablePagination,
 		TestProgress,
+		TestSelect,
+		TestSwitch,
+		TestRadio,
+		TestChips,
 	},
 	data() {
 		return {
