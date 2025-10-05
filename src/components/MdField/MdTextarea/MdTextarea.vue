@@ -1,21 +1,22 @@
 <script>
-import { h, mergeProps } from "vue"
-import MdComponent from "@/core/MdComponent"
-import MdUuid from "@/core/utils/MdUuid"
-import MdFieldMixin from "../MdFieldMixin"
+import { h } from 'vue'
+import MdComponent from '@/core/MdComponent'
+import MdUuid from '@/core/utils/MdUuid'
+import MdFieldMixin from '../MdFieldMixin'
 
-function calculateContentHeight(el, lineHeight) {
-  const originalHeight = el.style.height
+function calculateContentHeight (el, lineHeight) {
+  const origHeight = el.style.height
   const height = el.offsetHeight
   const scrollHeight = el.scrollHeight
 
-  el.style.overflow = "hidden"
+  el.style.overflow = 'hidden'
 
   if (height >= scrollHeight) {
-    el.style.height = height + lineHeight + "px"
+    el.style.height = (height + lineHeight) + 'px'
 
     if (scrollHeight < el.scrollHeight) {
-      el.style.height = originalHeight
+      el.style.height = origHeight
+
       return height
     }
   }
@@ -23,129 +24,87 @@ function calculateContentHeight(el, lineHeight) {
   return scrollHeight
 }
 
-const getListeners = (attrs = {}) => {
-  const listeners = {}
-  Object.keys(attrs).forEach((key) => {
-    const value = attrs[key]
-    if (key.startsWith("on") && typeof value === "function") {
-      listeners[key] = value
-    }
-  })
-  return listeners
-}
-
 export default MdComponent({
-  name: "MdTextarea",
-  inheritAttrs: false,
+  name: 'MdTextarea',
   mixins: [MdFieldMixin],
-  inject: ["MdField"],
   props: {
     id: {
       type: String,
-      default: () => "md-textarea-" + MdUuid(),
+      default: () => 'md-textarea-' + MdUuid()
     },
-    mdAutogrow: Boolean,
+    mdAutogrow: Boolean
   },
   computed: {
-    textareaListeners() {
+    textareaStyles () {
       return {
-        ...getListeners(this.$attrs),
-        onInput: this.onInput,
+        height: this.textareaHeight
       }
-    },
-    textareaStyles() {
-      return {
-        height: this.textareaHeight,
-      }
-    },
+    }
   },
   methods: {
-    getTextAreaLineSize() {
-      if (typeof window === "undefined" || !this.$el) {
-        return 0
-      }
+    getTextAreaLineSize () {
       const style = window.getComputedStyle(this.$el)
+
       return parseInt(style.lineHeight, 10)
     },
-    setTextAreaSize(height) {
+    setTextAreaSize (height) {
       let newHeight = height
 
-      if (!newHeight) {
+      if (!height) {
         const size = this.getTextAreaLineSize()
-        if (!size) {
-          this.textareaHeight = null
-          return
-        }
+
         newHeight = calculateContentHeight(this.$el, size)
       }
 
-      this.textareaHeight = `${newHeight}px`
+      this.textareaHeight = newHeight + 'px'
     },
-    applyStyles() {
-      if (!this.mdAutogrow || typeof window === "undefined") return
-
-      this.setTextAreaSize(32)
-      this.$nextTick(() => {
-        this.setTextAreaSize()
-        window.setTimeout(() => {
-          if (this.$el) {
-            this.$el.style.overflow = "auto"
-          }
-        }, 10)
-      })
+    applyStyles () {
+      if (this.mdAutogrow) {
+        this.setTextAreaSize(32)
+        this.$nextTick().then(() => {
+          this.setTextAreaSize()
+          window.setTimeout(() => {
+            this.$el.style.overflow = 'auto'
+          }, 10)
+        })
+      }
     },
-    setTextarea() {
+    setTextarea () {
       this.MdField.textarea = true
     },
-    setAutogrow() {
+    setAutogrow () {
       this.MdField.autogrow = this.mdAutogrow
     },
-    onInput(event) {
-      const value = event && event.target ? event.target.value : event
-      this.model = value
+    onInput (e) {
+      this.model = e.target.value
       this.setFieldValue()
-    },
+    }
   },
   watch: {
-    localValue() {
+    localValue () {
       this.applyStyles()
-    },
-    mdAutogrow() {
-      this.setAutogrow()
-      this.applyStyles()
-    },
+    }
   },
-  created() {
+  created () {
     this.setTextarea()
     this.setAutogrow()
   },
-  mounted() {
-    this.$nextTick(() => {
-      this.applyStyles()
-    })
+  mounted () {
+    this.$nextTick().then(this.applyStyles)
   },
-  beforeUnmount() {
-    this.setTextarea(false)
+  beforeUnmount () {
+    this.MdField.textarea = false
   },
   render() {
-    return h(
-      "textarea",
-      mergeProps(
-        { class: "md-textarea", style: this.textareaStyles },
-        this.attributes,
-        this.textareaListeners,
-        {
-          value: this.model,
-          onFocus: this.onFocus,
-          onBlur: this.onBlur,
-        }
-      )
-    )
-  },
+    return h('textarea', {
+      class: 'md-textarea',
+      style: this.textareaStyles,
+      ...this.attributes,
+      value: this.model,
+      onInput: this.onInput,
+      onFocus: this.onFocus,
+      onBlur: this.onBlur
+    })
+  }
 })
 </script>
-
-<style lang="scss">
-
-</style>
-

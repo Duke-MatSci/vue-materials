@@ -1,43 +1,40 @@
 <script>
-import { h } from "vue"
+import { h } from 'vue'
+import MdSubheader from '@/components/MdSubheader/MdSubheader.vue'
 
 export default {
-  name: "MdOptgroup",
-  inheritAttrs: false,
+  name: 'MdOptgroup',
+  components: {
+    MdSubheader
+  },
   props: {
     label: String,
-    disabled: Boolean,
+    disabled: Boolean
   },
-  provide() {
+  provide () {
     return {
       MdOptgroup: {
-        disabled: this.disabled,
-      },
+        disabled: this.disabled
+      }
     }
   },
   render() {
-    const children = []
-    if (this.label) {
-      children.push(h("md-subheader", null, this.label))
-    }
-    if (this.$slots.default) {
-      children.push(...this.$slots.default())
-    }
-
-    return h("div", { class: "md-optgroup" }, children)
-  },
+    return h('div', { class: 'md-optgroup' }, [
+      h(this.$options.components.MdSubheader, {}, () => this.label),
+      this.$slots.default ? this.$slots.default() : []
+    ])
+  }
 }
 </script>
 
 <style lang="scss">
-.md-optgroup {
-  .md-subheader {
-    text-transform: uppercase;
-  }
+  .md-optgroup {
+    .md-subheader {
+      text-transform: uppercase;
+    }
 
-  .md-ripple.md-list-item-content {
-    padding-left: 24px;
+    .md-ripple.md-list-item-content {
+      padding-left: 24px;
+    }
   }
-}
 </style>
-

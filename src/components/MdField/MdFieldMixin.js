@@ -1,27 +1,6 @@
-import { nextTick } from "vue"
-
-const isInputEvent = (value) => {
-  if (!value || typeof value !== "object") return false
-  const ctor = value.constructor && value.constructor.toString()
-  if (!ctor) return false
-  const match = ctor.match(/function (\w*)/)
-  if (!match || !match[1]) return false
-  return match[1].toLowerCase() === "inputevent"
-}
-
-const filterAttrs = (attrs = {}) => {
-  const filtered = {}
-  Object.keys(attrs).forEach((key) => {
-    if (key.startsWith("on")) return
-    filtered[key] = attrs[key]
-  })
-  return filtered
-}
-
 export default {
-  inheritAttrs: false,
+  inject: ['MdField'],
   props: {
-    value: {},
     modelValue: {},
     placeholder: String,
     name: String,
@@ -29,183 +8,166 @@ export default {
     readonly: Boolean,
     required: Boolean,
     disabled: Boolean,
-    mdCounter: [String, Number],
+    mdCounter: [String, Number]
   },
-  data() {
+  data () {
     return {
-      localValue:
-        this.value !== undefined
-          ? this.value
-          : this.modelValue !== undefined
-            ? this.modelValue
-            : null,
-      textareaHeight: false,
+      localValue: this.modelValue,
+      textareaHeight: false
     }
   },
   computed: {
     model: {
-      get() {
+      get () {
         return this.localValue
       },
-      set(value) {
-        if (isInputEvent(value)) {
-          return
+      set (value) {
+        if (value.constructor.toString().match(/function (\w*)/)[1].toLowerCase() !== 'inputevent') {
+          this.$nextTick(() => {
+            this.localValue = value
+            this.MdField.hasInvalidValue = this.isInvalidValue()
+          })
         }
-
-        nextTick(() => {
-          this.localValue = value
-          this.MdField.hasInvalidValue = this.isInvalidValue()
-        })
-      },
+      }
     },
-    clear() {
+    clear () {
       return this.MdField.clear
     },
-    attributes() {
-      const attrs = filterAttrs(this.$attrs)
-      const result = {
-        ...attrs,
+    attributes () {
+      const attrs = {
+        ...this.$attrs,
         id: this.id,
         name: this.name,
         disabled: this.disabled,
         required: this.required,
         placeholder: this.placeholder,
         readonly: this.readonly,
-        maxlength: this.maxlength,
+        maxlength: this.maxlength
       }
 
-      if (Object.prototype.hasOwnProperty.call(this.$props, "type")) {
-        result.type = this.type
+      // Only add type if it exists (MdInput has it, but MdTextarea and MdFile don't)
+      if (this.type !== undefined) {
+        attrs.type = this.type
       }
 
-      return result
-    },
+      return attrs
+    }
   },
   watch: {
-    model() {
-      this.setFieldValue()
+    model: {
+      immediate: true,
+      handler (newVal, oldVal) {
+        console.log('[MdFieldMixin model watcher] old:', oldVal, 'new:', newVal);
+        this.setFieldValue()
+        console.log('[MdFieldMixin model watcher] MdField.value after set:', this.MdField?.value);
+      }
     },
-    clear(clear) {
+    clear (clear) {
       if (clear) {
         this.clearField()
       }
     },
-    placeholder() {
+    placeholder () {
       this.setPlaceholder()
     },
-    disabled() {
+    disabled () {
       this.setDisabled()
     },
-    required() {
+    required () {
       this.setRequired()
     },
-    maxlength() {
+    maxlength () {
       this.setMaxlength()
     },
-    mdCounter() {
+    mdCounter () {
       this.setMaxlength()
     },
-    localValue(val) {
-      this.$emit("input", val)
-      this.$emit("update:modelValue", val)
+    localValue (val) {
+      this.$emit('update:modelValue', val)
     },
-    value(val) {
-      if (val !== undefined) {
-        this.localValue = val
-      }
-    },
-    modelValue(val) {
-      if (val !== undefined) {
-        this.localValue = val
-      }
-    },
+    modelValue (val) {
+      this.localValue = val
+    }
   },
   methods: {
-    clearField() {
-      if (this.$el && this.$el.tagName === "INPUT") {
-        this.$el.value = ""
-      }
-      this.model = ""
+    clearField () {
+      this.$el.value = ''
+      this.model = ''
       this.setFieldValue()
     },
-    setLabelFor() {
-      if (!this.$el || !this.$el.parentNode) return
-      const label = this.$el.parentNode.querySelector("label")
-      if (!label) return
-      const forAttribute = label.getAttribute("for")
-      if (!forAttribute || forAttribute.indexOf("md-") >= 0) {
-        label.setAttribute("for", this.id)
-      }
-    },
-    setFormResetListener() {
-      if (!this.$el || !this.$el.form) return
-      this.$el.form.addEventListener("reset", this.onParentFormReset)
-    },
-    removeFormResetListener() {
-      if (!this.$el || !this.$el.form) return
-      this.$el.form.removeEventListener("reset", this.onParentFormReset)
-    },
-    onParentFormReset() {
-      this.clearField()
-    },
-    isInvalidValue() {
-      try {
-        if (this.$el && this.$el.validity) {
-          return this.$el.validity.badInput
-        }
-        if (this.$el && this.$el.querySelector) {
-          const input = this.$el.querySelector("input")
-          if (input && input.validity) {
-            return input.validity.badInput
+    setLabelFor () {
+      if (this.$el.parentNode) {
+        const label = this.$el.parentNode.querySelector('label')
+
+        if (label) {
+          const forAttribute = label.getAttribute('for')
+
+          if (!forAttribute || forAttribute.indexOf('md-') >= 0) {
+            label.setAttribute('for', this.id)
           }
         }
-      } catch (e) {
-        return false
       }
-
-      return false
     },
-    setFieldValue() {
+    setFormResetListener () {
+      if (!this.$el.form) {
+        return
+      }
+      const parentForm = this.$el.form
+      parentForm.addEventListener('reset', this.onParentFormReset)
+    },
+    removeFormResetListener () {
+      if (!this.$el.form) {
+        return
+      }
+      const parentForm = this.$el.form
+      parentForm.removeEventListener('reset', this.onParentFormReset)
+    },
+    onParentFormReset () {
+      this.clearField()
+    },
+    isInvalidValue () {
+      return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector("input").validity.badInput
+    },
+    setFieldValue () {
+      console.log('[MdFieldMixin setFieldValue] setting MdField.value to:', this.model);
       this.MdField.value = this.model
+      console.log('[MdFieldMixin setFieldValue] MdField.value is now:', this.MdField.value);
     },
-    setPlaceholder() {
+    setPlaceholder () {
       this.MdField.placeholder = Boolean(this.placeholder)
     },
-    setDisabled() {
+    setDisabled () {
       this.MdField.disabled = Boolean(this.disabled)
     },
-    setRequired() {
+    setRequired () {
       this.MdField.required = Boolean(this.required)
     },
-    setMaxlength() {
+    setMaxlength () {
       if (this.mdCounter) {
         this.MdField.counter = parseInt(this.mdCounter, 10)
-      } else if (this.maxlength) {
-        this.MdField.maxlength = parseInt(this.maxlength, 10)
       } else {
-        this.MdField.counter = null
-        this.MdField.maxlength = null
+        this.MdField.maxlength = parseInt(this.maxlength, 10)
       }
     },
-    onFocus() {
+    onFocus () {
       this.MdField.focused = true
     },
-    onBlur() {
+    onBlur () {
       this.MdField.focused = false
-    },
+    }
   },
-  created() {
+  created () {
     this.setFieldValue()
     this.setPlaceholder()
     this.setDisabled()
     this.setRequired()
     this.setMaxlength()
   },
-  mounted() {
+  mounted () {
     this.setLabelFor()
     this.setFormResetListener()
   },
-  beforeUnmount() {
+  beforeUnmount () {
     this.removeFormResetListener()
-  },
+  }
 }

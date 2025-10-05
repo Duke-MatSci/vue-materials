@@ -1,54 +1,40 @@
 <script>
-import { h, mergeProps } from "vue"
-import MdUuid from "@/core/utils/MdUuid"
-import MdFileIcon from "@/core/icons/MdFileIcon.vue"
-import MdFieldMixin from "../MdFieldMixin"
-
-const extractListeners = (attrs = {}) => {
-  const listeners = {}
-  Object.keys(attrs).forEach((key) => {
-    const value = attrs[key]
-    if (key.startsWith("on") && typeof value === "function") {
-      listeners[key] = value
-    }
-  })
-  return listeners
-}
+import { h } from 'vue'
+import MdUuid from '@/core/utils/MdUuid'
+import MdFileIcon from '@/core/icons/MdFileIcon.vue'
+import MdFieldMixin from '../MdFieldMixin'
 
 export default {
-  name: "MdFile",
-  inheritAttrs: false,
+  name: 'MdFile',
   components: {
-    MdFileIcon,
+    MdFileIcon
   },
   mixins: [MdFieldMixin],
-  inject: ["MdField"],
   props: {
     id: {
       type: String,
-      default: () => "md-file-" + MdUuid(),
+      default: () => 'md-file-' + MdUuid()
     },
-    name: String,
+    name: String
   },
   computed: {
-    iconClass() {
+    iconClass () {
       return {
-        "md-disabled": this.disabled,
+        'md-disabled': this.disabled
       }
-    },
-    fileListeners() {
-      return extractListeners(this.$attrs)
-    },
+    }
   },
   methods: {
-    getMultipleName(files) {
-      const names = []
-      Array.from(files || []).forEach(({ name }) => names.push(name))
-      return names.join(", ")
+    getMultipleName (files) {
+      let names = [];
+
+      [...files].forEach(({ name }) => names.push(name))
+
+      return names.join(', ')
     },
-    getFileName(files, target) {
+    getFileName (files, target) {
       if (!files || files.length === 0) {
-        return target.value.split("\\").pop()
+        return target.value.split('\\').pop()
       }
 
       if (files.length > 1) {
@@ -61,104 +47,93 @@ export default {
 
       return null
     },
-    openPicker() {
+    openPicker () {
       this.onFocus()
-      if (this.$refs.inputFile) {
-        this.$refs.inputFile.click()
+      // Access the file input by its unique ID
+      const fileInput = document.getElementById(this.id)
+      if (fileInput) {
+        fileInput.click()
       }
     },
-    onChange(event) {
-      this.onFileSelected(event)
-      const handler = this.fileListeners.onChange
-      if (handler) {
-        handler(event)
-      }
+    onChange ($event) {
+      this.onFileSelected($event)
     },
-    onFileSelected({ target, dataTransfer }) {
-      const files = (target && target.files) || (dataTransfer && dataTransfer.files)
+    onFileSelected ({ target, dataTransfer }) {
+      const files = target.files || dataTransfer.files
+
       this.model = this.getFileName(files, target)
-      this.setFieldValue()
-      this.$emit("md-change", files || (target && target.value))
-    },
+      this.$emit('md-change', files || target.value)
+    }
   },
-  created() {
+  created () {
     this.MdField.file = true
   },
-  beforeUnmount() {
+  beforeUnmount () {
     this.MdField.file = false
   },
   render() {
-    const fileListeners = { ...this.fileListeners }
-    delete fileListeners.onChange
+    // Extract only the attributes we need for the file input (no readonly, placeholder, etc.)
+    const fileInputAttrs = {
+      type: 'file',
+      id: this.id,
+      name: this.name,
+      disabled: this.disabled,
+      required: this.required
+    }
 
-    const textInput = h(
-      "input",
-      mergeProps(
-        {
-          class: "md-input",
-          readonly: true,
-          value: this.model,
-        },
-        {
-          disabled: this.disabled,
-          required: this.required,
-          placeholder: this.placeholder,
-        },
-        {
-          onClick: this.openPicker,
-          onBlur: this.onBlur,
-          onFocus: this.onFocus,
-        }
-      )
-    )
+    // Add additional attributes from parent (like accept, multiple, etc.)
+    const additionalAttrs = { ...this.$attrs }
+    delete additionalAttrs.class  // Don't pass class through
 
-    const fileInput = h(
-      "input",
-      mergeProps(
-        {
-          type: "file",
-          ref: "inputFile",
-          onChange: this.onChange,
-        },
-        this.attributes,
-        fileListeners
-      )
-    )
-
-    return h("div", { class: "md-file" }, [
-      h(MdFileIcon, { class: ["md-file-icon", this.iconClass], onClick: this.openPicker }),
-      textInput,
-      fileInput,
+    return h('div', { class: 'md-file' }, [
+      h(this.$options.components.MdFileIcon, {
+        class: ['md-file-icon', this.iconClass],
+        onClick: this.openPicker
+      }),
+      h('input', {
+        class: 'md-input',
+        readonly: true,
+        value: this.model,
+        disabled: this.disabled,
+        required: this.required,
+        placeholder: this.placeholder,
+        onClick: this.openPicker,
+        onBlur: this.onBlur
+      }),
+      h('input', {
+        ...fileInputAttrs,
+        ...additionalAttrs,
+        onChange: this.onChange
+      })
     ])
-  },
+  }
 }
 </script>
 
 <style lang="scss">
-.md-file {
-  display: flex;
-  flex: 1;
+  .md-file {
+    display: flex;
+    flex: 1;
 
-  input[type="file"] {
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    position: absolute;
-    clip: rect(0 0 0 0);
-    border: 0;
-  }
-
-  .md-file-icon {
-    &:not(.md-disabled) {
-      cursor: pointer;
+    input[type="file"] {
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      position: absolute;
+      clip: rect(0 0 0 0);
+      border: 0;
     }
 
-    &.md-disabled {
-      pointer-events: none;
+    .md-file-icon {
+      &:not(.md-disabled) {
+        cursor: pointer;
+      }
+
+      &.md-disabled {
+        pointer-events: none;
+      }
     }
   }
-}
 </style>
-
