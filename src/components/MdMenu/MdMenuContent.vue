@@ -1,16 +1,19 @@
 <script>
-import { h, mergeProps, Transition } from "vue"
+import { h, mergeProps, Transition, nextTick } from "vue"
+import Popper from "popper.js"
+import deepmerge from "deepmerge"
 import MdComponent from "@/core/MdComponent"
 import MdObserveEvent from "@/core/utils/MdObserveEvent"
 import MdResizeObserver from "@/core/utils/MdResizeObserver"
 import MdContains from "@/core/utils/MdContains"
-import MdPopover from "@/components/MdPopover/MdPopover.vue"
+import MdPortal from "@/components/MdPortal/MdPortal.vue"
 import MdList from "@/components/MdList/MdList.vue"
 
 export default MdComponent({
   name: "MdMenuContent",
+  inheritAttrs: false,
   components: {
-    MdPopover,
+    MdPortal,
     MdList,
   },
   props: {
@@ -25,11 +28,17 @@ export default MdComponent({
     popperSettings: null,
     menuStyles: "",
     _keydownHandler: null,
+    popperInstance: null,
+    anchorEl: null,
+    menuEl: null,
+    shouldActivate: false,
   }),
   computed: {
     filteredAttrs() {
       const attrs = { ...(this.$attrs || {}) }
       delete attrs.id
+      delete attrs.class
+      delete attrs.style
       Object.keys(attrs).forEach((key) => {
         if (key.startsWith("on") && typeof attrs[key] === "function") {
           delete attrs[key]
@@ -62,6 +71,25 @@ export default MdComponent({
         "md-menu-content": this.didMount,
         "md-shallow": !this.didMount,
       }
+
+      // Merge class from $attrs (e.g., "md-select-menu" from MdSelect)
+      const attrClass = this.$attrs.class
+      if (attrClass) {
+        if (typeof attrClass === 'string') {
+          attrClass.split(' ').filter(c => c).forEach(c => obj[c] = true)
+        } else if (Array.isArray(attrClass)) {
+          attrClass.forEach(c => {
+            if (typeof c === 'string') {
+              c.split(' ').filter(s => s).forEach(s => obj[s] = true)
+            } else if (typeof c === 'object') {
+              Object.assign(obj, c)
+            }
+          })
+        } else if (typeof attrClass === 'object') {
+          Object.assign(obj, attrClass)
+        }
+      }
+
       return obj
     },
     listClasses() {
@@ -86,18 +114,31 @@ export default MdComponent({
     shouldRender(shouldRender) {
       if (shouldRender) {
         this.setPopperSettings()
-        setTimeout(() => {
+        nextTick(() => {
+          if (this.anchorEl && this.menuEl) {
+            this.createPopper()
+          }
           this.setInitialHighlightIndex()
           this.createClickEventObserver()
           this.createResizeObserver()
           this.createKeydownListener()
-        }, 0)
+        })
       } else {
+        this.shouldActivate = false
         this.highlightIndex = -1
         this.clearAllHighlights()
         this.destroyClickEventObserver()
         this.destroyResizeObserver()
         this.destroyKeyDownListener()
+        this.killPopper()
+      }
+    },
+    popperSettings: {
+      deep: true,
+      handler() {
+        if (this.popperInstance) {
+          this.createPopper()
+        }
       }
     },
   },
@@ -215,11 +256,19 @@ export default MdComponent({
       this.destroyClickEventObserver()
       this.MdMenu.bodyClickObserver = MdObserveEvent(document.body, "click", (event) => {
         event.stopPropagation()
-        const menuRef = this.$refs.menu
-        if (!menuRef) return
-        const isMenu = this.MdMenu.$el ? MdContains(this.MdMenu.$el, event.target) : false
-        const isContent = MdContains(menuRef, event.target)
-        if (!isMenu && (this.MdMenu.closeOnClick || !isContent)) {
+        // Use this.menuEl instead of this.$refs.menu because the element is teleported
+        const menuEl = this.menuEl
+        if (!menuEl) {
+          return
+        }
+
+        // Check if click is inside the menu trigger element
+        const isMenu = this.MdMenu.$el && MdContains(this.MdMenu.$el, event.target)
+        // Check if click is inside the menu content (dropdown)
+        const isContent = MdContains(menuEl, event.target)
+
+        // Close if: closeOnClick is enabled, OR click is outside both trigger and content
+        if (this.MdMenu.closeOnClick || (!isMenu && !isContent)) {
           this.MdMenu.active = false
           this.destroyClickEventObserver()
           this.destroyResizeObserver()
@@ -325,6 +374,48 @@ export default MdComponent({
         this.menuStyles = ""
       }
     },
+    getPopperOptions() {
+      return {
+        placement: "bottom",
+        modifiers: {
+          preventOverflow: { boundariesElement: "viewport", padding: 16 },
+          computeStyle: { gpuAcceleration: false },
+        },
+        onCreate: () => {
+          this.shouldActivate = true
+        },
+      }
+    },
+    killPopper() {
+      if (this.popperInstance) {
+        this.popperInstance.destroy()
+        this.popperInstance = null
+      }
+    },
+    createPopper() {
+      const options = deepmerge(this.getPopperOptions(), this.popperSettings || {})
+      if (this.menuEl && this.anchorEl) {
+        this.killPopper()
+        this.popperInstance = new Popper(this.anchorEl, this.menuEl, options)
+      }
+    },
+    handleAnchorMount(vnode) {
+      // Use MdMenu.$el as the anchor for positioning, not the teleport span
+      this.anchorEl = this.MdMenu && this.MdMenu.$el ? this.MdMenu.$el : null
+      if (this.shouldRender && this.anchorEl && this.menuEl) {
+        nextTick(() => this.createPopper())
+      }
+    },
+    handleMenuMount(vnode) {
+      this.menuEl = vnode && vnode.el ? vnode.el : null
+      if (this.shouldRender && this.anchorEl && this.menuEl) {
+        nextTick(() => this.createPopper())
+      }
+    },
+    handleMenuUnmount() {
+      this.menuEl = null
+      this.killPopper()
+    },
   },
   mounted() {
     this.setPopperSettings()
@@ -332,6 +423,13 @@ export default MdComponent({
     this.$nextTick(() => {
       this.setHighlightItems()
       this.didMount = true
+      // Ensure anchorEl is set after MdMenu has mounted
+      if (this.MdMenu && this.MdMenu.$el && !this.anchorEl) {
+        this.anchorEl = this.MdMenu.$el
+        if (this.shouldRender && this.menuEl) {
+          this.createPopper()
+        }
+      }
     })
     if (this.MdMenu) {
       this.$watch(
@@ -350,12 +448,26 @@ export default MdComponent({
         () => this.MdMenu.offsetY,
         () => this.setPopperSettings()
       )
+      // Watch for MdMenu.$el to be set
+      this.$watch(
+        () => this.MdMenu.$el,
+        (newEl) => {
+          if (newEl && !this.anchorEl) {
+            this.anchorEl = newEl
+            if (this.shouldRender && this.menuEl) {
+              this.createPopper()
+            }
+          }
+        },
+        { immediate: true }
+      )
     }
   },
   beforeUnmount() {
     this.destroyClickEventObserver()
     this.destroyResizeObserver()
     this.destroyKeyDownListener()
+    this.killPopper()
   },
   render() {
     const renderMenu = () => {
@@ -363,7 +475,7 @@ export default MdComponent({
 
       const listVNode = h(
         MdList,
-        mergeProps({ class: this.listClasses }, this.filteredAttrs),
+        mergeProps({ class: this.listClasses, mdTheme: this.$mdActiveTheme }, this.filteredAttrs),
         listSlot
       )
 
@@ -373,12 +485,40 @@ export default MdComponent({
         [listVNode]
       )
 
+      // Merge styles from $attrs with menuStyles
+      let combinedStyles = {}
+
+      // Parse menuStyles if it's a string
+      if (typeof this.menuStyles === 'string') {
+        this.menuStyles.split(';').forEach(rule => {
+          const [key, value] = rule.split(':').map(s => s.trim())
+          if (key && value) combinedStyles[key] = value
+        })
+      } else if (typeof this.menuStyles === 'object') {
+        combinedStyles = { ...this.menuStyles }
+      }
+
+      // Merge $attrs.style
+      const attrStyle = this.$attrs.style
+      if (attrStyle) {
+        if (typeof attrStyle === 'string') {
+          attrStyle.split(';').forEach(rule => {
+            const [key, value] = rule.split(':').map(s => s.trim())
+            if (key && value) combinedStyles[key] = value
+          })
+        } else if (typeof attrStyle === 'object') {
+          combinedStyles = { ...combinedStyles, ...attrStyle }
+        }
+      }
+
       return h(
         "div",
         {
           class: [this.menuClasses, this.mdContentClass, this.$mdActiveTheme],
-          style: this.menuStyles,
+          style: combinedStyles,
           ref: "menu",
+          onVnodeMounted: this.handleMenuMount,
+          onVnodeUnmounted: this.handleMenuUnmount,
         },
         [container]
       )
@@ -388,15 +528,23 @@ export default MdComponent({
       h(
         Transition,
         mergeProps({ name: "md-menu-content", css: this.didMount }, this.transitionListeners),
-        { default: () => [renderMenu()] }
+        { default: () => (this.shouldRender ? [renderMenu()] : []) }
       )
 
+    const portal = h(
+      MdPortal,
+      { mdTarget: typeof document !== "undefined" ? document.body : null },
+      { default: () => (this.shouldRender ? [renderTransition()] : []) }
+    )
+
+    // Anchor element
     return h(
-      MdPopover,
-      { mdSettings: this.popperSettings, mdActive: this.shouldRender },
+      "span",
       {
-        default: () => (this.shouldRender ? [renderTransition()] : []),
-      }
+        style: { display: "contents" },
+        onVnodeMounted: this.handleAnchorMount
+      },
+      [portal]
     )
   },
 })

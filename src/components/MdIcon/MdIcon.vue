@@ -1,45 +1,47 @@
-<template>
-	<md-svg-loader
-		class="md-icon md-icon-image"
-		:md-src="mdSrc"
-		:class="[$mdActiveTheme]"
-		v-if="mdSrc"
-		@md-loaded="$emit('md-loaded')"
-	/>
-	<i class="md-icon md-icon-font" :class="[$mdActiveTheme]" v-else>
-		<slot />
-	</i>
-</template>
-
 <script>
 import { h } from "vue"
+import MdComponent from "@/core/MdComponent"
 import MdSvgLoader from "@/components/MdSvgLoader/MdSvgLoader.vue"
 
-export default {
+export default MdComponent({
 	name: "MdIcon",
-	emits: ["md-loaded"],
-	components: { MdSvgLoader },
+	components: {
+		MdSvgLoader
+	},
 	props: {
 		mdSrc: String,
 	},
-	setup(props, { slots, emit }) {
-		return () => {
-			if (props.mdSrc) {
-            return h(
-              MdSvgLoader,
-              { class: ["md-icon", "md-icon-image"], mdSrc: props.mdSrc, onMdLoaded: () => emit("md-loaded") },
-              {}
-            )
-			} else {
-				return h(
-					"i",
-					{ class: ["md-icon", "md-icon-font"] },
-					slots.default ? slots.default() : []
-				)
-			}
+	render() {
+		// Merge classes from parent component, avoiding duplicates
+		const inheritedClasses = this.$attrs.class || []
+		const classArray = Array.isArray(inheritedClasses) ? inheritedClasses : [inheritedClasses]
+
+		// Filter out classes we're already adding
+		const baseClasses = ["md-icon", "md-icon-font", "md-icon-image"]
+		const uniqueInheritedClasses = classArray.filter(c =>
+			typeof c === 'string' ? !baseClasses.includes(c) : true
+		)
+
+		if (this.mdSrc) {
+			return h(
+				MdSvgLoader,
+				{
+					class: ["md-icon", "md-icon-image", this.$mdActiveTheme, ...uniqueInheritedClasses],
+					mdSrc: this.mdSrc,
+					onMdLoaded: () => this.$emit("md-loaded")
+				}
+			)
+		} else {
+			return h(
+				"i",
+				{
+					class: ["md-icon", "md-icon-font", this.$mdActiveTheme, ...uniqueInheritedClasses]
+				},
+				this.$slots.default ? this.$slots.default() : []
+			)
 		}
-	},
-}
+	}
+})
 </script>
 
 <style lang="scss">

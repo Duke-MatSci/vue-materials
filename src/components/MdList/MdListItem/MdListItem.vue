@@ -77,13 +77,22 @@ export default {
     const listenersAndAttrs = this.$attrs || {}
     const listComponent = createListComponent(this.$props, hasRouter(this), listenersAndAttrs, slots)
 
+    // Separate LI classes from button-specific classes
     let liClass = "md-list-item"
     if (listenersAndAttrs.class) liClass += " " + listenersAndAttrs.class
 
-    // Pass attrs both to li and inner container to preserve behavior
+    // Extract non-class attrs for child
+    const childAttrs = {}
+    Object.keys(listenersAndAttrs).forEach(key => {
+      if (key !== 'class') {
+        childAttrs[key] = listenersAndAttrs[key]
+      }
+    })
+
+    // Child props - ONLY add md-list-item-container and md-button-clean classes
     const childProps = {
-      class: ["md-list-item-container", "md-button-clean", listenersAndAttrs.class || ""],
-      ...listenersAndAttrs,
+      class: ["md-list-item-container", "md-button-clean"],
+      ...childAttrs,
       ...(this.mdExpanded !== undefined ? { mdExpanded: this.mdExpanded } : {}),
       ...(this.disabled !== undefined ? { disabled: this.disabled } : {}),
       ...(this.to ? { to: this.to } : {}),

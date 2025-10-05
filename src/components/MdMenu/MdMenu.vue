@@ -1,9 +1,10 @@
 <script>
-import { h, mergeProps } from "vue"
+import { h } from "vue"
 import MdPropValidator from "@/core/utils/MdPropValidator"
 
 export default {
   name: "MdMenu",
+  inheritAttrs: false,
   props: {
     mdActive: Boolean,
     mdAlignTrigger: Boolean,
@@ -134,9 +135,34 @@ export default {
   },
   render() {
     const slot = this.$slots.default ? this.$slots.default() : []
+
+    // Manually merge classes with deduplication
+    const { class: attrClass, ...restAttrs } = this.$attrs
+    const classSet = new Set(["md-menu"])
+
+    if (attrClass) {
+      if (typeof attrClass === 'string') {
+        attrClass.split(' ').filter(c => c).forEach(c => classSet.add(c))
+      } else if (Array.isArray(attrClass)) {
+        attrClass.forEach(c => {
+          if (typeof c === 'string') {
+            c.split(' ').filter(s => s).forEach(s => classSet.add(s))
+          } else if (typeof c === 'object') {
+            Object.keys(c).forEach(key => {
+              if (c[key]) classSet.add(key)
+            })
+          }
+        })
+      } else if (typeof attrClass === 'object') {
+        Object.keys(attrClass).forEach(key => {
+          if (attrClass[key]) classSet.add(key)
+        })
+      }
+    }
+
     return h(
       "div",
-      mergeProps({ class: "md-menu" }, this.$attrs),
+      { ...restAttrs, class: Array.from(classSet).join(' ') },
       slot
     )
   },
