@@ -1,57 +1,56 @@
 <template>
 	<div>
 		<md-table
-			:value="searched"
-			@input="searched = $event"
+			v-model="searched"
 			md-sort="name"
 			md-sort-order="asc"
 			md-card
 			md-fixed-header
 		>
-			<md-table-toolbar>
-				<div class="md-toolbar-section-start">
-					<h1 class="md-title">Users</h1>
-				</div>
+			<template #md-table-toolbar>
+				<md-table-toolbar>
+					<div class="md-toolbar-section-start">
+						<h1 class="md-title">Users</h1>
+					</div>
 
-				<md-field
-					md-clearable
-					class="md-toolbar-section-end"
-					@md-clear="clearSearch"
-				>
-					<md-input
-						placeholder="Search by name..."
-						v-model="search"
-						@input="searchOnTable"
-					/>
-				</md-field>
-			</md-table-toolbar>
+					<md-field md-clearable class="md-toolbar-section-end">
+						<md-input
+							placeholder="Search by name..."
+							v-model="search"
+							@input="searchOnTable"
+						/>
+					</md-field>
+				</md-table-toolbar>
+			</template>
 
-			<md-table-empty-state
-				md-label="No users found"
-				:md-description="`No user found for this '${search}' query. Try a different search term or create a new user.`"
-			>
-				<md-button class="md-primary md-raised" @click="newUser"
-					>Create New User</md-button
+			<template #md-table-empty-state>
+				<md-table-empty-state
+					md-label="No users found"
+					:md-description="`No user found for this '${search}' query. Try a different search term or create a new user.`"
 				>
-			</md-table-empty-state>
+					<md-button class="md-primary md-raised" @click="newUser"
+						>Create New User</md-button
+					>
+				</md-table-empty-state>
+			</template>
 
 			<template #md-table-row="{ item }">
-				<md-table-row :md-item="item">
-					<md-table-cell md-label="ID" md-sort-by="id" md-numeric>
-						{{ item.id }}
-					</md-table-cell>
-					<md-table-cell md-label="Name" md-sort-by="name">
-						{{ item.name }}
-					</md-table-cell>
-					<md-table-cell md-label="Email" md-sort-by="email">
-						{{ item.email }}
-					</md-table-cell>
-					<md-table-cell md-label="Gender" md-sort-by="gender">
-						{{ item.gender }}
-					</md-table-cell>
-					<md-table-cell md-label="Job Title" md-sort-by="title">
-						{{ item.title }}
-					</md-table-cell>
+				<md-table-row>
+					<md-table-cell md-label="ID" md-sort-by="id" md-numeric>{{
+						item.id
+					}}</md-table-cell>
+					<md-table-cell md-label="Name" md-sort-by="name">{{
+						item.name
+					}}</md-table-cell>
+					<md-table-cell md-label="Email" md-sort-by="email">{{
+						item.email
+					}}</md-table-cell>
+					<md-table-cell md-label="Gender" md-sort-by="gender">{{
+						item.gender
+					}}</md-table-cell>
+					<md-table-cell md-label="Job Title" md-sort-by="title">{{
+						item.title
+					}}</md-table-cell>
 				</md-table-row>
 			</template>
 		</md-table>
@@ -68,7 +67,7 @@ const searchByName = (items, term) => {
 		return items.filter((item) => toLower(item.name).includes(toLower(term)))
 	}
 
-	return items.slice()
+	return items
 }
 
 export default {
@@ -226,13 +225,9 @@ export default {
 		searchOnTable() {
 			this.searched = searchByName(this.users, this.search)
 		},
-		clearSearch() {
-			this.search = null
-			this.searchOnTable()
-		},
 	},
 	created() {
-		this.searchOnTable()
+		this.searched = this.users
 	},
 }
 </script>

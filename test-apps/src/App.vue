@@ -43,10 +43,10 @@
 			<h4>Dialog Examples</h4>
 			<TestDialog />
 		</div>
-		<!-- <div style="margin-top: 20px">
+		<div style="margin-top: 20px">
 			<h4>Tabs Examples (Standalone)</h4>
 			<TestTabs />
-		</div> -->
+		</div>
 		<div style="margin-top: 20px">
 			<h4>App Fixed Examples</h4>
 			<TestAppFixed />
@@ -55,14 +55,14 @@
 			<h4>App Flexible Examples</h4>
 			<TestAppFlexible />
 		</div> -->
-		<div style="margin-top: 20px">
+		<!-- <div style="margin-top: 20px">
 			<h4>Table Examples</h4>
 			<TestTable />
 		</div>
 		<div style="margin-top: 20px">
 			<h4>Table Pagination Examples</h4>
 			<TestTablePagination />
-		</div>
+		</div> -->
 		<div style="margin-top: 20px">
 			<h4>Progress Examples</h4>
 			<TestProgress />
@@ -130,11 +130,11 @@ import TestStepper from "./components/TestStepper.vue"
 import TestField from "./components/TestField.vue"
 // import TestDrawer from "./components/TestDrawer.vue"
 import TestDialog from "./components/TestDialog.vue"
-// import TestTabs from "./components/TestTabs.vue"
+import TestTabs from "./components/TestTabs.vue"
 import TestAppFixed from "./components/TestAppFixed.vue"
 // import TestAppFlexible from "./components/TestAppFlexible.vue"
-import TestTable from "./components/TestTable.vue"
-import TestTablePagination from "./components/TestTablePagination.vue"
+// import TestTable from "./components/TestTable.vue"
+// import TestTablePagination from "./components/TestTablePagination.vue"
 import TestProgress from "./components/TestProgress.vue"
 import TestSelect from "./components/TestSelect.vue"
 import TestSwitch from "./components/TestSwitch.vue"
@@ -154,11 +154,11 @@ export default {
 		TestField,
 		// TestDrawer,
 		TestDialog,
-		// TestTabs,
+		TestTabs,
 		TestAppFixed,
 		// TestAppFlexible,
-		TestTable,
-		TestTablePagination,
+		// TestTable,
+		// TestTablePagination,
 		TestProgress,
 		TestSelect,
 		TestSwitch,
