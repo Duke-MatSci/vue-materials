@@ -3,6 +3,7 @@ import { h, resolveComponent } from "vue"
 import MdComponent from "../../core/MdComponent"
 import MdFocused from "../../core/mixins/MdFocused/MdFocused"
 import MdRouterLink from "../../core/mixins/MdRouterLink/MdRouterLink"
+import MdRipple from "../MdRipple/MdRipple.vue"
 
 export default MdComponent({
 	name: "MdButton",
@@ -116,7 +117,7 @@ export default MdComponent({
       this.$slots.default ? this.$slots.default() : []
     )
     const rippleComponent = h(
-      "md-ripple",
+      MdRipple,
       {
         mdDisabled: !this.mdRipple || this.disabled,
         mdEventTrigger: false,
