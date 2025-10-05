@@ -1,7 +1,7 @@
 {
 	"name": "@duke-matsci/vue-materials",
 	"private": false,
-	"version": "0.0.640",
+	"version": "0.0.743",
 	"type": "module",
 	"repository": {
 		"type": "git",
@@ -104,6 +104,7 @@
 		"@vitejs/plugin-vue-jsx": "^3.0.1",
 		"compression": "^1.7.4",
 		"express": "^4.18.2",
+		"playwright": "^1.55.1",
 		"sass": "^1.62.1",
 		"sass-loader": "^13.3.0",
 		"serve-static": "^1.15.0",
