@@ -4,6 +4,7 @@ node_modules
 /DO_NOT_USE
 /.cursor
 /.claude
+visual-test.js
 
 # local env files
 .env.local
