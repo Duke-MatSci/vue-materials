@@ -57,9 +57,7 @@ export default {
     model: {
       immediate: true,
       handler (newVal, oldVal) {
-        console.log('[MdFieldMixin model watcher] old:', oldVal, 'new:', newVal);
         this.setFieldValue()
-        console.log('[MdFieldMixin model watcher] MdField.value after set:', this.MdField?.value);
       }
     },
     clear (clear) {
@@ -129,9 +127,7 @@ export default {
       return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector("input").validity.badInput
     },
     setFieldValue () {
-      console.log('[MdFieldMixin setFieldValue] setting MdField.value to:', this.model);
       this.MdField.value = this.model
-      console.log('[MdFieldMixin setFieldValue] MdField.value is now:', this.MdField.value);
     },
     setPlaceholder () {
       this.MdField.placeholder = Boolean(this.placeholder)

@@ -64,14 +64,11 @@ export default MdComponent({
     // Method that children can call to notify parent of value changes
     notifyValueChange(hasValue) {
       this.fieldHasValue = hasValue
-      console.log('[MdField notifyValueChange] fieldHasValue set to:', hasValue);
     }
   },
   computed: {
     stringValue () {
-      const result = (this.MdField.value || this.MdField.value === 0) && this.MdField.value.toString()
-      console.log('[MdField stringValue] MdField.value:', this.MdField.value, 'result:', result);
-      return result
+      return (this.MdField.value || this.MdField.value === 0) && this.MdField.value.toString()
     },
     hasCounter () {
       return this.mdCounter && (this.MdField.maxlength || this.MdField.counter)
@@ -81,9 +78,7 @@ export default MdComponent({
     },
     hasValue () {
       // Check if child components have set the childHasValue flag directly
-      const result = this.MdField.childHasValue || this.MdField.hasInvalidValue
-      console.log('[MdField hasValue] childHasValue:', this.MdField.childHasValue, 'hasInvalidValue:', this.MdField.hasInvalidValue, 'result:', result);
-      return result
+      return this.MdField.childHasValue || this.MdField.hasInvalidValue
     },
     valueLength () {
       if (this.stringValue) {

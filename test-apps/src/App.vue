@@ -83,6 +83,10 @@
 			<h4>Chips Examples</h4>
 			<TestChips />
 		</div>
+		<div style="margin-top: 20px">
+			<h4>Checkbox Examples</h4>
+			<TestCheckbox />
+		</div>
 		<!-- Commented out until components are migrated -->
 		<!--
 		<MdApp md-mode="reveal">
@@ -128,6 +132,7 @@ import TestList from "./components/TestList.vue"
 import TestSnack from "./components/TestSnack.vue"
 import TestStepper from "./components/TestStepper.vue"
 import TestField from "./components/TestField.vue"
+import TestCheckbox from "./components/TestCheckbox.vue"
 // import TestDrawer from "./components/TestDrawer.vue"
 import TestDialog from "./components/TestDialog.vue"
 import TestTabs from "./components/TestTabs.vue"
@@ -152,6 +157,7 @@ export default {
 		TestSnack,
 		TestStepper,
 		TestField,
+		TestCheckbox,
 		// TestDrawer,
 		TestDialog,
 		TestTabs,

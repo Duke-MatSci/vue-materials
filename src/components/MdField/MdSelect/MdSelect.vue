@@ -105,7 +105,6 @@ export default {
 	},
 	methods: {
 		updateFieldValue(val) {
-			console.log('[MdSelect updateFieldValue] val:', val);
 			// Set MdField.value for other purposes
 			const hasValue = val !== undefined && val !== null && val !== ''
 			this.MdField.value = hasValue ? val : null
@@ -116,10 +115,8 @@ export default {
 			if (mdFieldEl) {
 				if (hasValue) {
 					mdFieldEl.classList.add('md-has-value')
-					console.log('[MdSelect updateFieldValue] Added md-has-value class to DOM');
 				} else {
 					mdFieldEl.classList.remove('md-has-value')
-					console.log('[MdSelect updateFieldValue] Removed md-has-value class from DOM');
 				}
 			}
 		},

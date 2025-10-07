@@ -7,8 +7,6 @@ import "../../dist/vue-material.min.css"
 // import "../../dist/style.css"
 import "../../dist/theme/default.css"
 
-console.log("VueMaterials:", VueMaterials)
-
 const app = createApp(App)
 
 // Use Vue Materials
