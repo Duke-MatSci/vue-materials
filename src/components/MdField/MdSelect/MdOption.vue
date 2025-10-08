@@ -67,6 +67,7 @@ export default {
       if (val === this.isSelected) {
         return
       }
+      // Update selection when checkbox value changes (from checkbox click)
       this.setSelection()
     },
     isSelected (val) {
@@ -136,11 +137,13 @@ export default {
 
     if (this.MdSelect.multiple) {
       children.push(
-        h(this.$options.components.MdCheckbox, {
+        h(MdCheckbox, {
           class: 'md-primary',
           modelValue: this.isChecked,
           'onUpdate:modelValue': (val) => { this.isChecked = val },
-          disabled: this.isDisabled
+          disabled: this.isDisabled,
+          trueValue: true,
+          falseValue: false
         })
       )
     }
@@ -152,7 +155,7 @@ export default {
       }, this.$slots.default ? this.$slots.default() : [])
     )
 
-    return h(this.$options.components.MdMenuItem, {
+    return h(MdMenuItem, {
       class: this.optionClasses,
       disabled: this.isDisabled,
       onClick: this.setSelection

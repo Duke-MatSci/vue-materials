@@ -2,6 +2,7 @@
 import { h } from 'vue'
 import MdComponent from "@/core/MdComponent"
 import MdCheckboxMixin from "./MdCheckboxMixin"
+import MdRipple from '@/components/MdRipple/MdRipple.vue'
 
 export default MdComponent({
   name: "MdCheckbox",
@@ -21,20 +22,19 @@ export default MdComponent({
           this.toggleCheck()
         }
       }, [
-        h(this.$options.components.MdRipple, {
+        h(MdRipple, {
           mdActive: this.rippleActive,
           mdCentered: true,
+          mdDisabled: this.disabled,
           'onUpdate:mdActive': (val) => {
             this.rippleActive = val
           }
         }, {
           default: () => [
             h('input', {
-              class: 'md-checkbox-input',
               type: 'checkbox',
               ...this.attrs,
-              checked: this.isSelected,
-              onChange: () => this.toggleCheck()
+              indeterminate: this.indeterminate
             })
           ]
         })

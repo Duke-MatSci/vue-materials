@@ -15,6 +15,12 @@ export default {
     },
   },
   render() {
+    // Create slots object with function wrappers
+    const slots = {}
+    if (this.$slots.default) {
+      slots.default = () => this.$slots.default()
+    }
+
     return h(
       "div",
       { class: "md-list-item-default", onClick: this.toggleControl },
@@ -22,7 +28,7 @@ export default {
         h(
           MdListItemContent,
           { mdDisabled: true },
-          this.$slots.default ? { default: () => this.$slots.default() } : undefined
+          slots
         ),
       ]
     )

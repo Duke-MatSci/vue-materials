@@ -59,16 +59,22 @@ export default {
     },
   },
   render() {
-    const children = this.$slots.default ? this.$slots.default() : []
-    const hasValidChildren = children && children.length > 0 && children.some((c) => c != null)
-    const body = hasValidChildren ? children[0] : null
     let to = null
     if (typeof document !== 'undefined') {
       const candidate = this.toEl || document.body
       to = candidate && document.contains(candidate) ? candidate : 'body'
     }
+
+    // Create teleport content dynamically - do NOT hoist vnodes by calling slots outside render
+    const getTeleportContent = () => {
+      if (!this.$slots.default) return []
+      const children = this.$slots.default()
+      const hasValidChildren = children && children.length > 0 && children.some((c) => c != null)
+      return hasValidChildren ? [children[0]] : []
+    }
+
     // Wrap in a display: contents anchor to compute parent when mdAttachToParent=true
-    const teleported = to ? h(Teleport, { to }, body ? [body] : []) : (body || null)
+    const teleported = to ? h(Teleport, { to }, getTeleportContent()) : (getTeleportContent()[0] || null)
     return h("span", { style: { display: "contents" } }, teleported ? [teleported] : [])
   },
 }

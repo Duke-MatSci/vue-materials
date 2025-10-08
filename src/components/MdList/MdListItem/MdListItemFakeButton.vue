@@ -7,6 +7,12 @@ export default {
   name: "MdListItemFakeButton",
   mixins: [MdListItemMixin],
   render() {
+    // Create slots object with function wrappers
+    const slots = {}
+    if (this.$slots.default) {
+      slots.default = () => this.$slots.default()
+    }
+
     return h(
       "div",
       { class: "md-list-item-fake-button", disabled: this.disabled },
@@ -14,7 +20,7 @@ export default {
         h(
           MdListItemContent,
           { mdDisabled: this.isDisabled },
-          this.$slots.default ? { default: () => this.$slots.default() } : undefined
+          slots
         ),
       ]
     )

@@ -16,6 +16,12 @@ export default {
     type: String,
   },
   render() {
+    // Create slots object with function wrappers
+    const slots = {}
+    if (this.$slots.default) {
+      slots.default = () => this.$slots.default()
+    }
+
     return h(
       "a",
       { class: "md-list-item-link", ...this.$props },
@@ -23,7 +29,7 @@ export default {
         h(
           MdListItemContent,
           { mdDisabled: this.isDisabled },
-          this.$slots.default ? { default: () => this.$slots.default() } : undefined
+          slots
         ),
       ]
     )

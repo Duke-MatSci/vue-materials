@@ -21,6 +21,12 @@ export default {
     isDisabled() { return !this.mdRipple || this.disabled },
   },
   render() {
+    // Create slots object with function wrappers
+    const slots = {}
+    if (this.$slots.default) {
+      slots.default = () => this.$slots.default()
+    }
+
     const RouterLink = resolveComponent("router-link")
     return h(
       RouterLink,
@@ -53,7 +59,7 @@ export default {
               h(
                 MdListItemContent,
                 { mdDisabled: this.isDisabled },
-                this.$slots.default ? { default: () => this.$slots.default() } : undefined
+                slots
               ),
             ]
           ),

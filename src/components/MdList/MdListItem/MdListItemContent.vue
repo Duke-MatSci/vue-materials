@@ -7,10 +7,15 @@ export default {
   components: { MdRipple },
   props: { mdDisabled: Boolean },
   render() {
+    const slots = {}
+    if (this.$slots.default) {
+      slots.default = () => this.$slots.default()
+    }
+
     return h(
       MdRipple,
       { class: "md-list-item-content", mdDisabled: this.mdDisabled },
-      this.$slots.default ? { default: () => this.$slots.default() } : undefined
+      slots
     )
   },
 }
