@@ -11,6 +11,11 @@ export default {
 	data: () => ({
 		boolean: true,
 	}),
+	watch: {
+		boolean(value) {
+			console.log("Checkbox value:", value)
+		},
+	},
 }
 </script>
 

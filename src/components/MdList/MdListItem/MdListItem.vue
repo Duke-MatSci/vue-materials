@@ -105,11 +105,15 @@ export default {
       ...(this.type ? { type: this.type } : {}),
     }
 
-    const slotObj = {}
-    if (slots && typeof slots.default === "function") slotObj.default = () => slots.default()
-    if (hasMdExpandSlot(this.$props, slots)) slotObj["md-expand"] = () => slots["md-expand"]()
+    // Create slots object inline to avoid hoisted vnode warning
+    const getSlots = () => {
+      const slotObj = {}
+      if (slots && typeof slots.default === "function") slotObj.default = () => slots.default()
+      if (hasMdExpandSlot(this.$props, slots)) slotObj["md-expand"] = () => slots["md-expand"]()
+      return slotObj
+    }
 
-    return h("li", { ...listenersAndAttrs, class: liClass }, [h(listComponent, childProps, slotObj)])
+    return h("li", { ...listenersAndAttrs, class: liClass }, [h(listComponent, childProps, getSlots())])
   },
 }
 </script>

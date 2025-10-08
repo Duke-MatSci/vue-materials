@@ -41,7 +41,7 @@ export default {
 			MdSelect: {
 				items: {},
 				label: null,
-				multiple: false,
+				multiple: false, // Will be set in created() before child components render
 				modelValue: this.localValue,
 				// Methods will be assigned in created()
 				setValue: null,
@@ -57,6 +57,9 @@ export default {
 		return { MdSelect }
 	},
 	created() {
+		// Initialize multiple BEFORE child components are created
+		this.MdSelect.multiple = this.multiple
+
 		// Bind methods to MdSelect object so options can call them
 		this.MdSelect.setValue = this.setValue
 		this.MdSelect.setContent = this.setContent

@@ -133,11 +133,17 @@ export default {
     this.setIsSelected()
   },
   render() {
-    return h(MdMenuItem, {
+    const menuItemProps = {
       class: this.optionClasses,
-      disabled: this.isDisabled,
-      onClick: this.setSelection
-    }, () => {
+      disabled: this.isDisabled
+    }
+
+    // Only add onClick for single select - multiple select uses checkbox clicks
+    if (!this.isMultiple) {
+      menuItemProps.onClick = this.setSelection
+    }
+
+    return h(MdMenuItem, menuItemProps, () => {
       const children = []
 
       if (this.MdSelect.multiple) {
