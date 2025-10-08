@@ -30,13 +30,18 @@ export default MdComponent({
             this.rippleActive = val
           }
         }, {
-          default: () => [
-            h('input', {
+          default: () => {
+            const inputProps = {
               type: 'checkbox',
               ...this.attrs,
-              indeterminate: this.indeterminate
-            })
-          ]
+              '.indeterminate': this.indeterminate
+            }
+
+            // Use .checked to set DOM property, not attribute
+            inputProps['.checked'] = this.isSelected
+
+            return [h('input', inputProps)]
+          }
         })
       ])
     )

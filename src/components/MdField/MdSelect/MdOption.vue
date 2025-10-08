@@ -133,33 +133,35 @@ export default {
     this.setIsSelected()
   },
   render() {
-    const children = []
-
-    if (this.MdSelect.multiple) {
-      children.push(
-        h(MdCheckbox, {
-          class: 'md-primary',
-          modelValue: this.isChecked,
-          'onUpdate:modelValue': (val) => { this.isChecked = val },
-          disabled: this.isDisabled,
-          trueValue: true,
-          falseValue: false
-        })
-      )
-    }
-
-    children.push(
-      h('span', {
-        class: 'md-list-item-text',
-        ref: (el) => { this._textRef = el }
-      }, this.$slots.default ? this.$slots.default() : [])
-    )
-
     return h(MdMenuItem, {
       class: this.optionClasses,
       disabled: this.isDisabled,
       onClick: this.setSelection
-    }, () => children)
+    }, () => {
+      const children = []
+
+      if (this.MdSelect.multiple) {
+        children.push(
+          h(MdCheckbox, {
+            class: 'md-primary',
+            modelValue: this.isChecked,
+            'onUpdate:modelValue': (val) => { this.isChecked = val },
+            disabled: this.isDisabled,
+            trueValue: true,
+            falseValue: false
+          })
+        )
+      }
+
+      children.push(
+        h('span', {
+          class: 'md-list-item-text',
+          ref: (el) => { this._textRef = el }
+        }, this.$slots.default ? this.$slots.default() : [])
+      )
+
+      return children
+    })
   }
 }
 </script>

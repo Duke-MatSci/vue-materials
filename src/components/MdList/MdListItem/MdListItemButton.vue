@@ -23,12 +23,6 @@ export default {
     const attrs = { ...this.$attrs }
     delete attrs.class
 
-    // Create slots object with function wrappers
-    const slots = {}
-    if (this.$slots.default) {
-      slots.default = () => this.$slots.default()
-    }
-
     return h(
       "button",
       {
@@ -41,7 +35,7 @@ export default {
         h(
           MdListItemContent,
           { mdDisabled: this.isDisabled },
-          slots
+          this.$slots.default ? { default: () => this.$slots.default() } : {}
         ),
       ]
     )

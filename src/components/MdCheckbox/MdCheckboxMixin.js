@@ -8,6 +8,7 @@ export default {
     modelValue: [String, Boolean, Object, Number, Array],
     value: {
       type: [String, Boolean, Object, Number],
+      default: undefined
     },
     name: [String, Number],
     required: Boolean,
