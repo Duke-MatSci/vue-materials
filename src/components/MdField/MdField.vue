@@ -44,26 +44,15 @@ export default MdComponent({
       clear: false,
       file: false,
       hasInvalidValue: false,
-      select: false,
-      childHasValue: false
+      select: false
     })
 
     // Provide the reactive object
     provide('MdField', MdField)
 
-    // Create a separate reactive value that we'll update manually for hasValue
-    const fieldHasValue = ref(false)
-
     return {
       MdField,
-      showPassword: false,
-      fieldHasValue
-    }
-  },
-  methods: {
-    // Method that children can call to notify parent of value changes
-    notifyValueChange(hasValue) {
-      this.fieldHasValue = hasValue
+      showPassword: false
     }
   },
   computed: {
@@ -77,8 +66,7 @@ export default MdComponent({
       return this.mdTogglePassword && this.MdField.password
     },
     hasValue () {
-      // Check if child components have set the childHasValue flag directly
-      return this.MdField.childHasValue || this.MdField.hasInvalidValue
+      return (this.stringValue && this.stringValue.length > 0) || this.MdField.hasInvalidValue
     },
     valueLength () {
       if (this.stringValue) {
