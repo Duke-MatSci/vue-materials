@@ -22,6 +22,7 @@ import MdTable from "./MdTable"
 import MdProgress from "./MdProgress"
 import MdRadio from "./MdRadio"
 import MdChips from "./MdChips"
+import MdHighlightText from "./MdHighlightText"
 
 export {
 	MdContent,
@@ -48,4 +49,5 @@ export {
 	MdProgress,
 	MdRadio,
 	MdChips,
+	MdHighlightText,
 }

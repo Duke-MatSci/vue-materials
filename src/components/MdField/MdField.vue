@@ -1,5 +1,5 @@
 <script>
-import { h, Transition, reactive, provide, ref } from 'vue'
+import { h, Transition, reactive, provide, computed as vueComputed } from 'vue'
 import MdComponent from '@/core/MdComponent'
 import MdClearIcon from '@/core/icons/MdClearIcon.vue'
 import MdPasswordOffIcon from '@/core/icons/MdPasswordOffIcon.vue'
@@ -26,7 +26,7 @@ export default MdComponent({
       default: true
     }
   },
-  setup() {
+  setup(props) {
     // Create reactive state in setup() to ensure proper reactivity with provide/inject
     const MdField = reactive({
       value: null,
@@ -50,47 +50,57 @@ export default MdComponent({
     // Provide the reactive object
     provide('MdField', MdField)
 
+    // Create computed properties in setup() to ensure proper reactivity tracking
+    const stringValue = vueComputed(() => {
+      if (MdField.value === null || MdField.value === undefined) {
+        return null
+      }
+      return MdField.value.toString()
+    })
+
+    const hasCounter = vueComputed(() => {
+      return props.mdCounter && (MdField.maxlength || MdField.counter)
+    })
+
+    const hasPasswordToggle = vueComputed(() => {
+      return props.mdTogglePassword && MdField.password
+    })
+
+    const hasValue = vueComputed(() => {
+      return (stringValue.value && stringValue.value.length > 0) || MdField.hasInvalidValue
+    })
+
+    const valueLength = vueComputed(() => {
+      return stringValue.value ? stringValue.value.length : 0
+    })
+
+    const fieldClasses = vueComputed(() => {
+      return {
+        'md-inline': props.mdInline,
+        'md-clearable': props.mdClearable,
+        'md-focused': MdField.focused,
+        'md-highlight': MdField.highlighted,
+        'md-disabled': MdField.disabled,
+        'md-required': MdField.required,
+        'md-has-value': hasValue.value,
+        'md-has-placeholder': MdField.placeholder,
+        'md-has-textarea': MdField.textarea,
+        'md-has-password': MdField.password,
+        'md-has-file': MdField.file,
+        'md-has-select': MdField.select,
+        'md-autogrow': MdField.autogrow
+      }
+    })
+
     return {
       MdField,
-      showPassword: false
-    }
-  },
-  computed: {
-    stringValue () {
-      return (this.MdField.value || this.MdField.value === 0) && this.MdField.value.toString()
-    },
-    hasCounter () {
-      return this.mdCounter && (this.MdField.maxlength || this.MdField.counter)
-    },
-    hasPasswordToggle () {
-      return this.mdTogglePassword && this.MdField.password
-    },
-    hasValue () {
-      return (this.stringValue && this.stringValue.length > 0) || this.MdField.hasInvalidValue
-    },
-    valueLength () {
-      if (this.stringValue) {
-        return this.stringValue.length
-      }
-
-      return 0
-    },
-    fieldClasses () {
-      return {
-        'md-inline': this.mdInline,
-        'md-clearable': this.mdClearable,
-        'md-focused': this.MdField.focused,
-        'md-highlight': this.MdField.highlighted,
-        'md-disabled': this.MdField.disabled,
-        'md-required': this.MdField.required,
-        'md-has-value': this.hasValue,
-        'md-has-placeholder': this.MdField.placeholder,
-        'md-has-textarea': this.MdField.textarea,
-        'md-has-password': this.MdField.password,
-        'md-has-file': this.MdField.file,
-        'md-has-select': this.MdField.select,
-        'md-autogrow': this.MdField.autogrow
-      }
+      showPassword: false,
+      stringValue,
+      hasCounter,
+      hasPasswordToggle,
+      hasValue,
+      valueLength,
+      fieldClasses
     }
   },
   methods: {

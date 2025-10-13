@@ -3,6 +3,7 @@ import MdFile from './MdFile/MdFile.vue'
 import MdInput from './MdInput/MdInput.vue'
 import MdTextarea from './MdTextarea/MdTextarea.vue'
 import { MdSelect, MdOption, MdOptgroup } from './MdSelect'
+import { MdAutocomplete } from './MdAutocomplete'
 
 export {
   MdField,
@@ -11,7 +12,8 @@ export {
   MdTextarea,
   MdSelect,
   MdOption,
-  MdOptgroup
+  MdOptgroup,
+  MdAutocomplete
 }
 
 export default function install(app) {
@@ -22,4 +24,5 @@ export default function install(app) {
   app.component(MdSelect.name, MdSelect)
   app.component(MdOption.name, MdOption)
   app.component(MdOptgroup.name, MdOptgroup)
+  app.component(MdAutocomplete.name, MdAutocomplete)
 }

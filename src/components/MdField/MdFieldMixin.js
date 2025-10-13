@@ -153,13 +153,20 @@ export default {
     }
   },
   created () {
-    this.setFieldValue()
     this.setPlaceholder()
     this.setDisabled()
     this.setRequired()
     this.setMaxlength()
   },
   mounted () {
+    // Set value in mounted() to ensure MdField can react to changes
+    this.setFieldValue()
+    // Force parent to re-render to pick up initial value
+    this.$nextTick(() => {
+      if (this.$parent && this.$parent.$forceUpdate) {
+        this.$parent.$forceUpdate()
+      }
+    })
     this.setLabelFor()
     this.setFormResetListener()
   },

@@ -87,6 +87,10 @@
 			<h4>Checkbox Examples</h4>
 			<TestCheckbox />
 		</div>
+		<div style="margin-top: 20px">
+			<h4>Autocomplete Examples</h4>
+			<TestAutoComplete />
+		</div>
 		<!-- Commented out until components are migrated -->
 		<!--
 		<MdApp md-mode="reveal">
@@ -145,6 +149,7 @@ import TestSelect from "./components/TestSelect.vue"
 import TestSwitch from "./components/TestSwitch.vue"
 import TestRadio from "./components/TestRadio.vue"
 import TestChips from "./components/TestChips.vue"
+import TestAutoComplete from "./components/TestAutoComplete.vue"
 
 export default {
 	name: "MdAppTest",
@@ -170,6 +175,7 @@ export default {
 		TestSwitch,
 		TestRadio,
 		TestChips,
+		TestAutoComplete,
 	},
 	data() {
 		return {
