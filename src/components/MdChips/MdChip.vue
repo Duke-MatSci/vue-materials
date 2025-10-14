@@ -83,10 +83,12 @@ export default MdComponent({
     }
 
     // Main chip div
+    // Extract class from $attrs to avoid it being overwritten when spreading
+    const { class: customClass, ...otherAttrs } = this.$attrs
     const chipDiv = h('div', {
-      class: ['md-chip', this.$mdActiveTheme, this.chipClasses],
+      class: ['md-chip', this.$mdActiveTheme, this.chipClasses, customClass],
       tabindex: 0,
-      ...this.$attrs
+      ...otherAttrs
     }, innerContent)
 
     // Wrap in outer transition
