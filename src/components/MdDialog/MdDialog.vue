@@ -49,30 +49,7 @@ export default MdComponent({
 		},
 	},
 	render() {
-		// Overlay teleported sibling: behind dialog (z-index lower)
-		const overlayVNode = this.mdBackdrop
-			? h(
-					Transition,
-					{ name: "md-overlay", persisted: true },
-					{
-						default: () =>
-							h(
-								"div",
-								{
-									class: [
-										"md-overlay",
-										this.mdBackdropClass,
-										{ "md-fixed": true },
-									],
-									style: this.mdActive ? undefined : { display: "none" },
-									onClick: this.onClick,
-								},
-								[]
-							),
-					}
-			  )
-			: null
-
+		// Container with only slot content - has md-dialog-container class and theme
 		const container = h(
 			"div",
 			{
@@ -82,34 +59,64 @@ export default MdComponent({
 					this.$mdActiveTheme,
 				],
 				onKeydown: this.onEsc,
-				...this.$attrs,
+				tabindex: "-1",
 			},
 			[this.$slots.default ? this.$slots.default() : null]
 		)
 
-		// Dialog teleported sibling: above overlay
+		// Dialog wrapper element - merges md-dialog class with user's custom classes
+		// Extract class from $attrs to avoid it being overwritten when spreading
+		const { class: customClass, ...otherAttrs } = this.$attrs
+		const dialogContent = this.mdActive
+			? h(
+					"div",
+					{
+						class: ["md-dialog", customClass],
+						...otherAttrs,
+					},
+					[h(MdFocusTrap, null, { default: () => [container] })]
+			  )
+			: null
+
+		// Wrap in Transition (matching Vue 2 structure)
 		const dialogVNode = h(
 			Transition,
-			{ name: "md-dialog", persisted: true },
+			{ name: "md-dialog" },
 			{
-				default: () =>
-					h(
-						"div",
-						{
-							class: "md-dialog",
-							style: this.mdActive ? undefined : { display: "none" },
-							key: "md-dialog",
-						},
-						[h(MdFocusTrap, null, { default: () => [container] })]
-					),
+				default: () => dialogContent,
 			}
 		)
 
-		return h(
-			Teleport,
-			{ to: "body" },
-			overlayVNode ? [overlayVNode, dialogVNode] : [dialogVNode]
+		// Overlay as separate VNode with Transition (matching Vue 2's MdOverlay structure)
+		const overlayContent = this.mdBackdrop && this.mdActive
+			? h(
+					"div",
+					{
+						class: [
+							"md-overlay",
+							this.mdBackdropClass,
+							{ "md-fixed": true },
+						],
+						onClick: this.onClick,
+					},
+					[]
+			  )
+			: null
+
+		const overlayVNode = h(
+			Transition,
+			{ name: "md-overlay" },
+			{
+				default: () => overlayContent,
+			}
 		)
+
+		// Teleport dialog and overlay separately to body (matching Vue 2's MdPortal pattern)
+		// Dialog first, overlay second (matching Vue 2 runtime DOM order)
+		return h("div", { style: { display: "none" } }, [
+			h(Teleport, { to: "body" }, [dialogVNode]),
+			h(Teleport, { to: "body" }, [overlayVNode]),
+		])
 	},
 })
 </script>
