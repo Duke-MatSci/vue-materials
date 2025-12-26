@@ -1,7 +1,7 @@
 export default {
-	emits:['update:modelValue'],
+  inject: ['MdField'],
   props: {
-    value: {},
+    modelValue: {},
     placeholder: String,
     name: String,
     maxlength: [String, Number],
@@ -12,24 +12,20 @@ export default {
   },
   data () {
     return {
-      localValue: this.value,
+      localValue: this.modelValue,
       textareaHeight: false
     }
   },
   computed: {
     model: {
       get () {
-        return  this.attributes.modelValue
+        return this.localValue
       },
       set (value) {
-				
-				
         if (value.constructor.toString().match(/function (\w*)/)[1].toLowerCase() !== 'inputevent') {
           this.$nextTick(() => {
-						
             this.localValue = value
             this.MdField.hasInvalidValue = this.isInvalidValue()
-
           })
         }
       }
@@ -38,9 +34,8 @@ export default {
       return this.MdField.clear
     },
     attributes () {
-      return {
+      const attrs = {
         ...this.$attrs,
-        //type: this.type,
         id: this.id,
         name: this.name,
         disabled: this.disabled,
@@ -49,15 +44,22 @@ export default {
         readonly: this.readonly,
         maxlength: this.maxlength
       }
+
+      // Only add type if it exists (MdInput has it, but MdTextarea and MdFile don't)
+      if (this.type !== undefined) {
+        attrs.type = this.type
+      }
+
+      return attrs
     }
   },
   watch: {
-    model (val) {
-			
-      this.setFieldValue()
-			
+    model: {
+      immediate: true,
+      handler (newVal, oldVal) {
+        this.setFieldValue()
+      }
     },
-		
     clear (clear) {
       if (clear) {
         this.clearField()
@@ -79,11 +81,9 @@ export default {
       this.setMaxlength()
     },
     localValue (val) {
-			
       this.$emit('update:modelValue', val)
     },
-    value (val) {
-			
+    modelValue (val) {
       this.localValue = val
     }
   },
@@ -124,10 +124,9 @@ export default {
       this.clearField()
     },
     isInvalidValue () {
-      return this.$el.validity ? this.$el.validity.badInput : false
+      return this.$el.validity ? this.$el.validity.badInput : this.$el.querySelector("input").validity.badInput
     },
     setFieldValue () {
-			//console.log('aaa'+this.model);
       this.MdField.value = this.model
     },
     setPlaceholder () {
@@ -154,13 +153,20 @@ export default {
     }
   },
   created () {
-    this.setFieldValue()
     this.setPlaceholder()
     this.setDisabled()
     this.setRequired()
     this.setMaxlength()
   },
   mounted () {
+    // Set value in mounted() to ensure MdField can react to changes
+    this.setFieldValue()
+    // Force parent to re-render to pick up initial value
+    this.$nextTick(() => {
+      if (this.$parent && this.$parent.$forceUpdate) {
+        this.$parent.$forceUpdate()
+      }
+    })
     this.setLabelFor()
     this.setFormResetListener()
   },

@@ -1,7 +1,8 @@
-import material from '@/material'
-import MdContent from './MdContent.vue'
+import material from "@/material"
+import MdContent from "./MdContent.vue"
 
-export default Vue => {
-  material(Vue)
-  Vue.component(MdContent.name, MdContent)
+export default (app) => {
+  material(app)
+  app.component(MdContent.name, MdContent)
 }
+

@@ -1,14 +1,13 @@
-import MdRipple from '@/components/MdRipple/MdRipple.vue'
+import MdRipple from "@/components/MdRipple/MdRipple.vue"
 
 export default {
-  components: {
-    MdRipple
-  },
-  props: {
-    mdRipple: {
-      type: Boolean,
-      default: true
-    }
-  }
-	
+	components: {
+		MdRipple,
+	},
+	props: {
+		mdRipple: {
+			type: Boolean,
+			default: true,
+		},
+	},
 }

@@ -1,17 +1,28 @@
-import material from '@/material'
-// import MdIcon from '@/components/MdIcon/MdIcon.vue'
 import MdField from './MdField.vue'
-// import MdSelect from './MdSelect/MdSelect.vue'
 import MdFile from './MdFile/MdFile.vue'
 import MdInput from './MdInput/MdInput.vue'
 import MdTextarea from './MdTextarea/MdTextarea.vue'
+import { MdSelect, MdOption, MdOptgroup } from './MdSelect'
+import { MdAutocomplete } from './MdAutocomplete'
 
-export default Vue => {
-  material(Vue)
-  // Vue.use(MdIcon)
-  // Vue.use(MdSelect)
-  Vue.component(MdField.name, MdField)
-  Vue.component(MdFile.name, MdFile)
-  Vue.component(MdInput.name, MdInput)
-  Vue.component(MdTextarea.name, MdTextarea)
+export {
+  MdField,
+  MdFile,
+  MdInput,
+  MdTextarea,
+  MdSelect,
+  MdOption,
+  MdOptgroup,
+  MdAutocomplete
+}
+
+export default function install(app) {
+  app.component(MdField.name, MdField)
+  app.component(MdFile.name, MdFile)
+  app.component(MdInput.name, MdInput)
+  app.component(MdTextarea.name, MdTextarea)
+  app.component(MdSelect.name, MdSelect)
+  app.component(MdOption.name, MdOption)
+  app.component(MdOptgroup.name, MdOptgroup)
+  app.component(MdAutocomplete.name, MdAutocomplete)
 }

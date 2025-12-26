@@ -1,166 +1,171 @@
 <script>
-	
-  import { nextTick, h, resolveComponent } from 'vue'
-	import Popper from 'popper.js'
-  import deepmerge from 'deepmerge'
+import { h, nextTick } from "vue"
+import Popper from "popper.js"
+import deepmerge from "deepmerge"
+import MdPortal from "@/components/MdPortal/MdPortal.vue"
 
-  import MdPortal from '@/components/MdPortal/MdPortal'
-
-  export default {
-    name: 'MdPopover',
-		emits:['md-active'],
-    abstract: true,
-    components: {
-      MdPortal
+export default {
+  name: "MdPopover",
+  inheritAttrs: false,
+  emits: ["md-active", "md-anchor", "md-destroy"],
+  props: {
+    mdActive: Boolean,
+    mdSettings: { type: Object, default: () => ({}) },
+    mdAttachToParent: Boolean,
+    mdTarget: { type: null },
+  },
+  data: () => ({
+    popperInstance: null,
+    anchorEl: null,
+    originalParentEl: null,
+    popEl: null,
+    shouldRender: false,
+    shouldActivate: false,
+    toEl: null,
+  }),
+  computed: {
+    popoverClasses() {
+      if (this.shouldActivate) return "md-active"
+      if (this.shouldRender) return "md-rendering"
+      return ""
     },
-    props: {
-			
-      mdActive: Boolean,
-      mdSettings: {
-        type: Object,
-        default: () => ({})
+  },
+  watch: {
+    mdActive: {
+      immediate: true,
+      handler(shouldRender) {
+        this.shouldRender = shouldRender
+        if (shouldRender) this.bindPopper()
+        else this.shouldActivate = false
+      },
+    },
+    mdSettings: {
+      deep: true,
+      handler() {
+        if (this.popperInstance) this.createPopper()
+      },
+    },
+  },
+  methods: {
+    getPopperOptions() {
+      return {
+        placement: "bottom",
+        modifiers: {
+          preventOverflow: { boundariesElement: "viewport", padding: 16 },
+          computeStyle: { gpuAcceleration: false },
+        },
+        onCreate: () => {
+          this.shouldActivate = true
+          this.$emit("md-active")
+        },
       }
     },
-    data: () => ({
-      popperInstance: null,
-      originalParentEl: null,
-      shouldRender: false,
-      shouldActivate: false
-    }),
-    computed: {
-      popoverClasses () {
-        if (this.shouldActivate) {
-          return 'md-active'
-        } else if (this.shouldRender) {
-          return 'md-rendering'
-        }
+    updateTarget() {
+      const anchor = this.anchorEl
+      if (this.mdAttachToParent) {
+        this.toEl = anchor && anchor.parentNode && anchor.parentNode.parentNode
+          ? anchor.parentNode.parentNode
+          : (typeof document !== 'undefined' ? document.body : null)
+      } else if (this.mdTarget) {
+        this.toEl = this.mdTarget
+      } else {
+        this.toEl = typeof document !== "undefined" ? document.body : null
       }
     },
-    watch: {
-      mdActive: {
-        immediate: true,
-        handler (shouldRender) {
-          this.shouldRender = shouldRender
-
-          if (shouldRender) {
-						
-            this.bindPopper()
-          } else {
-            this.shouldActivate = false
-          }
-        }
-      },
-      mdSettings () {
-        if (this.popperInstance) {
-          this.createPopper()
-        }
-      }
-			
-    },
-    methods: {
-      getPopperOptions () {
-        return {
-          placement: 'bottom',
-          modifiers: {
-            preventOverflow: {
-              boundariesElement: 'viewport',
-              padding: 16
-            },
-            computeStyle: {
-              gpuAcceleration: false
-            }
-          },
-          onCreate: () => {
-            this.shouldActivate = true
-            this.$emit('md-active')
-          }
-        }
-      },
-      setOriginalParent (el) {
-        if (!this.originalParentEl) {
-					//console.log(el.classList.contains('md-checkbox-label'))
-					if(el.classList.contains('md-checkbox-label')) {
-						
-						if(el.closest('.all_selector')) {
-							el = el.closest('.all_selector');
-						}
-					}
-          this.originalParentEl = el
-        }
-      },
-      killPopper () {
-        if (this.popperInstance) {
-          this.popperInstance.destroy()
-          this.popperInstance = null
-        }
-      },
-      bindPopper () {
-        this.$nextTick().then(() => {
-          if (this.originalParentEl) {
-            this.createPopper()
-          }
-        })
-      },
-      createPopper () {
-				
-        if (this.mdSettings) {
-          const options = deepmerge(this.getPopperOptions(), this.mdSettings)
-					
-          if (this.$el.nodeType !== Node.COMMENT_NODE) {
-						//console.log(this.originalParentEl)
-						//console.log(this.$el)
-            this.popperInstance = new Popper(this.originalParentEl, this.$el, options);
-						var _this = this;
-						nextTick(function(){
-							var left = _this.$el.style && _this.$el.style.left ? _this.$el.style.left : false;
-							
-							if(left && left.charAt(0) == "-") {
-								_this.$el.style.left = '10px';
-							}
-
-							
-						});
-						
-						//console.log(this.$el.cloneNode(true));
-          }
-        }
-      },
-      resetPopper () {
-				
-        if (this.popperInstance) {
-					
-          this.killPopper()
-          this.createPopper()
-        }
+    killPopper() {
+      if (this.popperInstance) {
+        this.popperInstance.destroy()
+        this.popperInstance = null
       }
     },
-    beforeUnmount () {
-			
+    bindPopper() {
+      nextTick(() => {
+        if (!this.originalParentEl && this.anchorEl) {
+          this.originalParentEl = this.anchorEl.parentNode || null
+          this.$emit("md-anchor", this.originalParentEl)
+        }
+        this.updateTarget()
+        if (this.originalParentEl) this.createPopper()
+      })
+    },
+    createPopper() {
+      const options = deepmerge(this.getPopperOptions(), this.mdSettings || {})
+      if (this.popEl && this.originalParentEl) {
+        this.killPopper()
+        this.popperInstance = new Popper(this.originalParentEl, this.popEl, options)
+      }
+    },
+    resetPopper() {
+      if (this.popperInstance) {
+        this.killPopper()
+        this.createPopper()
+      }
+    },
+    handleAnchorMount(vnode) {
+      this.anchorEl = vnode && vnode.el ? vnode.el : null
+      if (!this.originalParentEl && this.anchorEl) {
+        this.originalParentEl = this.anchorEl.parentNode || null
+        this.$emit("md-anchor", this.originalParentEl)
+      }
+      this.updateTarget()
+      if (this.shouldRender && this.originalParentEl) this.createPopper()
+    },
+    handleAnchorUnmount() {
+      this.anchorEl = null
+      this.originalParentEl = null
+      this.toEl = null
+      this.killPopper()
+      this.$emit("md-destroy")
+    },
+    handlePopElMount(vnode) {
+      this.popEl = vnode && vnode.el ? vnode.el : null
+      if (this.popEl && this.shouldRender && this.originalParentEl) this.createPopper()
+    },
+    handlePopElUnmount() {
+      this.popEl = null
       this.killPopper()
     },
-    mounted () {
-			
-      this.resetPopper()
-    },
-    render () {
-			
-			const MdPortal = resolveComponent('md-portal')
-      return h(MdPortal, {
-        ...this.$attrs,
-				onMdInitialParent :  this.setOriginalParent,
-				onMdDestroy :  this.killPopper,
+  },
+  mounted() {
+    this.updateTarget()
+    this.resetPopper()
+  },
+  beforeUnmount() {
+    this.killPopper()
+    this.$emit("md-destroy")
+  },
+  render() {
+    const body = this.shouldRender
+      ? h(
+          "div",
+          {
+            class: ["md-popover", this.popoverClasses],
+            onVnodeMounted: this.handlePopElMount,
+            onVnodeUnmounted: this.handlePopElUnmount,
+          },
+          this.$slots.default ? this.$slots.default() : []
+        )
+      : null
 
-       
-      }, this.$slots.default)
-    }
-  }
+    // Anchor element as wrapper; portal teleports body to computed target
+    const portal = h(
+      MdPortal,
+      { mdTarget: this.toEl },
+      { default: () => (body ? [body] : []) }
+    )
+
+    return h(
+      "span",
+      { style: { display: "contents" }, onVnodeMounted: this.handleAnchorMount, onVnodeUnmounted: this.handleAnchorUnmount },
+      [portal]
+    )
+  },
+}
 </script>
 
 <style lang="scss">
-  .md-popover {
-    &.md-rendering {
-      opacity: 0;
-      transition: none !important;
-    }
-  }
+.md-popover.md-rendering {
+  opacity: 0;
+  transition: none !important;
+}
 </style>

@@ -1,0 +1,206 @@
+<template>
+	<div class="">
+		<h2>Vue Materials Test</h2>
+
+		<!-- Test Button Component -->
+		<div style="margin-top: 20px">
+			<h4>Icons Examples</h4>
+			<TestIcons />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Button Examples</h4>
+			<TestButton />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Card Examples</h4>
+			<TestCard />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Card Examples</h4>
+			<TestToolbar />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>List Examples</h4>
+			<TestList />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Snack Examples</h4>
+			<TestSnack />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Stepper Examples</h4>
+			<TestStepper />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Forms Examples</h4>
+			<TestField />
+		</div>
+		<!-- <div style="margin-top: 20px">
+			<h4>Drawer Examples</h4>
+			<TestDrawer />
+		</div> -->
+		<div style="margin-top: 20px">
+			<h4>Dialog Examples</h4>
+			<TestDialog />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Tabs Examples (Standalone)</h4>
+			<TestTabs />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>App Fixed Examples</h4>
+			<TestAppFixed />
+		</div>
+		<!-- <div style="margin-top: 20px">
+			<h4>App Flexible Examples</h4>
+			<TestAppFlexible />
+		</div> -->
+		<!-- <div style="margin-top: 20px">
+			<h4>Table Examples</h4>
+			<TestTable />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Table Pagination Examples</h4>
+			<TestTablePagination />
+		</div> -->
+		<div style="margin-top: 20px">
+			<h4>Progress Examples</h4>
+			<TestProgress />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Select Examples</h4>
+			<TestSelect />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Switch Examples</h4>
+			<TestSwitch />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Radio Examples</h4>
+			<TestRadio />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Chips Examples</h4>
+			<TestChips />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Checkbox Examples</h4>
+			<TestCheckbox />
+		</div>
+		<div style="margin-top: 20px">
+			<h4>Autocomplete Examples</h4>
+			<TestAutoComplete />
+		</div>
+		<!-- Commented out until components are migrated -->
+		<!--
+		<MdApp md-mode="reveal">
+			<MdAppToolbar class="md-primary">
+				<MdButton class="md-icon-button" @click="toggleDrawer">
+					<MdIcon>menu</MdIcon>
+				</MdButton>
+				<h2 class="md-title">App Title</h2>
+			</MdAppToolbar>
+
+			<MdAppDrawer :md-active="drawerActive">
+				<MdList>
+					<MdListItem @click="navigateTo('home')">
+						<MdIcon>home</MdIcon>
+						<span class="md-list-item-text">Home</span>
+					</MdListItem>
+					<MdListItem @click="navigateTo('profile')">
+						<MdIcon>person</MdIcon>
+						<span class="md-list-item-text">Profile</span>
+					</MdListItem>
+					<MdListItem @click="navigateTo('settings')">
+						<MdIcon>settings</MdIcon>
+						<span class="md-list-item-text">Settings</span>
+					</MdListItem>
+				</MdList>
+			</MdAppDrawer>
+
+			<MdAppContent>
+				<h3>Current Page: {{ currentPage }}</h3>
+				<p>Your app content here. This is the main content area.</p>
+				<p>Click the menu button to open the navigation drawer.</p>
+			</MdAppContent>
+		</MdApp>
+		--></div>
+</template>
+
+<script>
+import TestIcons from "./components/TestIcons.vue"
+import TestButton from "./components/TestButton.vue"
+import TestCard from "./components/TestCard.vue"
+import TestToolbar from "./components/TestToolbar.vue"
+import TestList from "./components/TestList.vue"
+import TestSnack from "./components/TestSnack.vue"
+import TestStepper from "./components/TestStepper.vue"
+import TestField from "./components/TestField.vue"
+import TestCheckbox from "./components/TestCheckbox.vue"
+// import TestDrawer from "./components/TestDrawer.vue"
+import TestDialog from "./components/TestDialog.vue"
+import TestTabs from "./components/TestTabs.vue"
+import TestAppFixed from "./components/TestAppFixed.vue"
+// import TestAppFlexible from "./components/TestAppFlexible.vue"
+// import TestTable from "./components/TestTable.vue"
+// import TestTablePagination from "./components/TestTablePagination.vue"
+import TestProgress from "./components/TestProgress.vue"
+import TestSelect from "./components/TestSelect.vue"
+import TestSwitch from "./components/TestSwitch.vue"
+import TestRadio from "./components/TestRadio.vue"
+import TestChips from "./components/TestChips.vue"
+import TestAutoComplete from "./components/TestAutoComplete.vue"
+
+export default {
+	name: "MdAppTest",
+	components: {
+		TestIcons,
+		TestButton,
+		TestCard,
+		TestToolbar,
+		TestList,
+		TestSnack,
+		TestStepper,
+		TestField,
+		TestCheckbox,
+		// TestDrawer,
+		TestDialog,
+		TestTabs,
+		TestAppFixed,
+		// TestAppFlexible,
+		// TestTable,
+		// TestTablePagination,
+		TestProgress,
+		TestSelect,
+		TestSwitch,
+		TestRadio,
+		TestChips,
+		TestAutoComplete,
+	},
+	data() {
+		return {
+			drawerActive: false,
+			currentPage: "home",
+		}
+	},
+	methods: {
+		toggleDrawer() {
+			this.drawerActive = !this.drawerActive
+		},
+		navigateTo(page) {
+			this.currentPage = page
+			this.drawerActive = false
+			console.log(`Navigating to: ${page}`)
+		},
+	},
+}
+</script>
+
+<style scoped>
+.md-app {
+	height: 400px;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	margin: 20px 0;
+}
+</style>

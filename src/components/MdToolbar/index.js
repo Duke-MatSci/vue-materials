@@ -1,7 +1,8 @@
-import material from '@/material'
-import MdToolbar from './MdToolbar.vue'
+import material from "@/material"
+import MdToolbar from "./MdToolbar.vue"
 
-export default Vue => {
-  material(Vue)
-  Vue.component(MdToolbar.name, MdToolbar)
+export default (app) => {
+  material(app)
+  app.component(MdToolbar.name, MdToolbar)
 }
+

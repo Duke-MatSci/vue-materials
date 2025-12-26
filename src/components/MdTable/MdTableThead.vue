@@ -1,23 +1,24 @@
-<template>
-  <thead>
-    <tr>
-      <md-table-head-selection />
-      <md-table-head v-for="(item, index) in MdTable.items" :key="index" :item="item" />
-    </tr>
-  </thead>
-</template>
-
 <script>
-  import MdTableHead from '@/components/MdTable/MdTableHead.vue'
-  import MdTableHeadSelection from '@/components/MdTable/MdTableHeadSelection.vue'
+import { h } from "vue"
+import MdTableHead from "./MdTableHead.vue"
+import MdTableHeadSelection from "./MdTableHeadSelection.vue"
 
-  export default {
-    name: 'MdTableThead',
-		
-    inject: ['MdTable'],
-    components: {
-      MdTableHead,
-      MdTableHeadSelection
-    }
-  }
+export default {
+  name: "MdTableThead",
+  inject: ["MdTable"],
+  render() {
+    const items = this.MdTable.items || {}
+    const headNodes = [h(MdTableHeadSelection)]
+
+    Object.keys(items)
+      .sort((a, b) => Number(a) - Number(b))
+      .forEach((key) => {
+      const item = items[key]
+      if (!item) return
+      headNodes.push(h(MdTableHead, { key, ...item }))
+    })
+
+    return h("thead", [h("tr", headNodes)])
+  },
+}
 </script>

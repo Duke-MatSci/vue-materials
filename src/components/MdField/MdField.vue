@@ -1,132 +1,179 @@
-<template>
-  <div class="md-field" :class="[$mdActiveTheme, fieldClasses]" @blur="onBlur">
-    <slot />
-
-    <span class="md-count" v-if="hasCounter">{{ valueLength }} / {{ MdField.maxlength || MdField.counter }}</span>
-
-    <transition name="md-input-action" appear>
-      <md-button tabindex="-1" class="md-icon-button md-dense md-input-action md-clear" @click="clearInput" v-if="hasValue && mdClearable" :disabled="MdField.disabled">
-        <md-clear-icon />
-      </md-button>
-    </transition>
-
-    <transition name="md-input-action" appear>
-      <md-button tabindex="-1" class="md-icon-button md-dense md-input-action md-toggle-password" @click="togglePassword" v-if="hasPasswordToggle">
-        <md-password-on-icon v-if="MdField.togglePassword" />
-        <md-password-off-icon v-else />
-      </md-button>
-    </transition>
-  </div>
-</template>
-
 <script>
-  import MdComponent from '@/core/MdComponent.js'
-  import MdClearIcon from '@/core/icons/MdClearIcon.vue'
-	import MdButton from "@/components/MdButton/MdButton.vue"
-  import MdPasswordOffIcon from '@/core/icons/MdPasswordOffIcon.vue'
-  import MdPasswordOnIcon from '@/core/icons/MdPasswordOnIcon.vue'
+import { h, Transition, reactive, provide, computed as vueComputed } from 'vue'
+import MdComponent from '@/core/MdComponent'
+import MdClearIcon from '@/core/icons/MdClearIcon.vue'
+import MdPasswordOffIcon from '@/core/icons/MdPasswordOffIcon.vue'
+import MdPasswordOnIcon from '@/core/icons/MdPasswordOnIcon.vue'
+import MdButton from '@/components/MdButton/MdButton.vue'
 
-  export default new MdComponent({
-    name: 'MdField',
-		emits:['md-clear'],
-    components: {
-			MdButton,
-      MdClearIcon,
-      MdPasswordOffIcon,
-      MdPasswordOnIcon
+export default MdComponent({
+  name: 'MdField',
+  components: {
+    MdButton,
+    MdClearIcon,
+    MdPasswordOffIcon,
+    MdPasswordOnIcon
+  },
+  props: {
+    mdInline: Boolean,
+    mdClearable: Boolean,
+    mdCounter: {
+      type: Boolean,
+      default: true
     },
-    props: {
-      mdInline: Boolean,
-      mdClearable: Boolean,
-      mdCounter: {
-        type: Boolean,
-        default: true
-      },
-      mdTogglePassword: {
-        type: Boolean,
-        default: true
-      }
-    },
-    data: () => ({
-      showPassword: false,
-      MdField: {
-        value: null,
-        focused: false,
-        highlighted: false,
-        disabled: false,
-        required: false,
-        placeholder: false,
-        textarea: false,
-        autogrow: false,
-        maxlength: null,
-        counter: null,
-        password: null,
-        togglePassword: false,
-        clear: false,
-        file: false,
-        hasInvalidValue: false
-      }
-    }),
-    provide () {
-      return {
-        MdField: this.MdField
-      }
-    },
-    computed: {
-      stringValue () {
-        return (this.MdField.value || this.MdField.value === 0) && this.MdField.value.toString()
-      },
-      hasCounter () {
-        return this.mdCounter && (this.MdField.maxlength || this.MdField.counter)
-      },
-      hasPasswordToggle () {
-        return this.mdTogglePassword && this.MdField.password
-      },
-      hasValue () {
-        return (this.stringValue && this.stringValue.length > 0) || this.MdField.hasInvalidValue 
-      },
-      valueLength () {
-        if (this.stringValue) {
-          return this.stringValue.length
-        }
-
-        return 0
-      },
-      fieldClasses () {
-        return {
-          'md-inline': this.mdInline,
-          'md-clearable': this.mdClearable,
-          'md-focused': this.MdField.focused,
-          'md-highlight': this.MdField.highlighted,
-          'md-disabled': this.MdField.disabled,
-          'md-required': this.MdField.required,
-          'md-has-value': this.hasValue,
-          'md-has-placeholder': this.MdField.placeholder,
-          'md-has-textarea': this.MdField.textarea,
-          'md-has-password': this.MdField.password,
-          'md-has-file': this.MdField.file,
-          'md-has-select': this.MdField.select,
-          'md-autogrow': this.MdField.autogrow
-        }
-      }
-    },
-    methods: {
-      clearInput () {
-				
-        this.MdField.clear = true
-        this.$emit('md-clear')
-        this.$nextTick().then(() => {
-          this.MdField.clear = false
-        })
-      },
-      togglePassword () {
-        this.MdField.togglePassword = !this.MdField.togglePassword
-      },
-      onBlur () {
-        this.MdField.highlighted = false
-      }
+    mdTogglePassword: {
+      type: Boolean,
+      default: true
     }
-  })
+  },
+  setup(props) {
+    // Create reactive state in setup() to ensure proper reactivity with provide/inject
+    const MdField = reactive({
+      value: null,
+      focused: false,
+      highlighted: false,
+      disabled: false,
+      required: false,
+      placeholder: false,
+      textarea: false,
+      autogrow: false,
+      maxlength: null,
+      counter: null,
+      password: null,
+      togglePassword: false,
+      clear: false,
+      file: false,
+      hasInvalidValue: false,
+      select: false
+    })
+
+    // Provide the reactive object
+    provide('MdField', MdField)
+
+    // Create computed properties in setup() to ensure proper reactivity tracking
+    const stringValue = vueComputed(() => {
+      if (MdField.value === null || MdField.value === undefined) {
+        return null
+      }
+      return MdField.value.toString()
+    })
+
+    const hasCounter = vueComputed(() => {
+      return props.mdCounter && (MdField.maxlength || MdField.counter)
+    })
+
+    const hasPasswordToggle = vueComputed(() => {
+      return props.mdTogglePassword && MdField.password
+    })
+
+    const hasValue = vueComputed(() => {
+      return (stringValue.value && stringValue.value.length > 0) || MdField.hasInvalidValue
+    })
+
+    const valueLength = vueComputed(() => {
+      return stringValue.value ? stringValue.value.length : 0
+    })
+
+    const fieldClasses = vueComputed(() => {
+      return {
+        'md-inline': props.mdInline,
+        'md-clearable': props.mdClearable,
+        'md-focused': MdField.focused,
+        'md-highlight': MdField.highlighted,
+        'md-disabled': MdField.disabled,
+        'md-required': MdField.required,
+        'md-has-value': hasValue.value,
+        'md-has-placeholder': MdField.placeholder,
+        'md-has-textarea': MdField.textarea,
+        'md-has-password': MdField.password,
+        'md-has-file': MdField.file,
+        'md-has-select': MdField.select,
+        'md-autogrow': MdField.autogrow
+      }
+    })
+
+    return {
+      MdField,
+      showPassword: false,
+      stringValue,
+      hasCounter,
+      hasPasswordToggle,
+      hasValue,
+      valueLength,
+      fieldClasses
+    }
+  },
+  methods: {
+    clearInput () {
+      this.MdField.clear = true
+      this.$emit('md-clear')
+      this.$nextTick().then(() => {
+        this.MdField.clear = false
+      })
+    },
+    togglePassword () {
+      this.MdField.togglePassword = !this.MdField.togglePassword
+    },
+    onBlur () {
+      this.MdField.highlighted = false
+    }
+  },
+  render() {
+    const children = []
+
+    // Default slot (input components)
+    if (this.$slots.default) {
+      children.push(...this.$slots.default())
+    }
+
+    // Character counter
+    if (this.hasCounter) {
+      children.push(
+        h('span', { class: 'md-count' },
+          `${this.valueLength} / ${this.MdField.maxlength || this.MdField.counter}`
+        )
+      )
+    }
+
+    // Clear button with transition
+    if (this.hasValue && this.mdClearable) {
+      children.push(
+        h(Transition, { name: 'md-input-action', appear: true }, () => [
+          h(this.$options.components.MdButton, {
+            tabindex: -1,
+            class: 'md-icon-button md-dense md-input-action md-clear',
+            onClick: this.clearInput,
+            disabled: this.MdField.disabled
+          }, () => [
+            h(this.$options.components.MdClearIcon)
+          ])
+        ])
+      )
+    }
+
+    // Password toggle button with transition
+    if (this.hasPasswordToggle) {
+      children.push(
+        h(Transition, { name: 'md-input-action', appear: true }, () => [
+          h(this.$options.components.MdButton, {
+            tabindex: -1,
+            class: 'md-icon-button md-dense md-input-action md-toggle-password',
+            onClick: this.togglePassword
+          }, () => [
+            this.MdField.togglePassword
+              ? h(this.$options.components.MdPasswordOnIcon)
+              : h(this.$options.components.MdPasswordOffIcon)
+          ])
+        ])
+      )
+    }
+
+    return h('div', {
+      class: ['md-field', this.$mdActiveTheme, this.fieldClasses],
+      onBlur: this.onBlur
+    }, children)
+  }
+})
 </script>
 
 <style lang="scss">
@@ -265,15 +312,14 @@
     }
 
     .md-input-action {
-      width: 22px;
-      min-width: 22px;
-      height: 22px;
+      width: 32px;
+      min-width: 32px;
+      height: 32px;
       margin: 0;
       position: absolute;
-      top: 22px;
+      top: 16px;
       right: 0;
       transition: $md-transition-default;
-			line-height: 11px;
 
       &.md-input-action-enter-active,
       &.md-input-action-leave-active {
@@ -528,9 +574,4 @@
       }
     }
   }
-	.md-field:has(.md-input:-webkit-autofill) label, .md-field:has(.md-input:autofill) label {
-		
-    top: 0px;
-    font-size: 12px;
-	}
 </style>

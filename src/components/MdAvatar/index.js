@@ -1,7 +1,9 @@
-import material from '@/material'
-import MdAvatar from './MdAvatar.vue'
+import material from "@/material"
+import MdAvatar from "./MdAvatar.vue"
 
-export default Vue => {
-  material(Vue)
-  Vue.component(MdAvatar.name, MdAvatar)
+export default (app) => {
+  material(app)
+  app.component(MdAvatar.name, MdAvatar)
 }
+
+export { MdAvatar }

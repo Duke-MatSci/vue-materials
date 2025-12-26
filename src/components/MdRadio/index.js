@@ -1,7 +1,9 @@
-import material from '@/material'
-import MdRadio from './MdRadio.vue'
+import material from "@/material"
+import MdRadio from "./MdRadio.vue"
 
-export default Vue => {
-  material(Vue)
-  Vue.component(MdRadio.name, MdRadio)
+export default (app) => {
+  material(app)
+  app.component(MdRadio.name, MdRadio)
 }
+
+export { MdRadio }

@@ -1,7 +1,8 @@
-import material from '@/material'
-import MdTooltip from './MdTooltip.vue'
+import material from "@/material"
+import MdTooltip from "./MdTooltip.vue"
 
-export default Vue => {
-  material(Vue)
-  Vue.component(MdTooltip.name, MdTooltip)
+export default (app) => {
+  material(app)
+  app.component(MdTooltip.name, MdTooltip)
 }
+

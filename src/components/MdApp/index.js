@@ -4,10 +4,11 @@ import MdAppToolbar from "./MdAppToolbar.vue"
 import MdAppContent from "./MdAppContent.vue"
 import MdAppDrawer from "./MdAppDrawer.vue"
 
-export default (Vue) => {
-	material(Vue)
-	Vue.component(MdApp.name, MdApp)
-	Vue.component(MdAppToolbar.name, MdAppToolbar)
-	Vue.component(MdAppContent.name, MdAppContent)
-	Vue.component(MdAppDrawer.name, MdAppDrawer)
+export default (app) => {
+  material(app)
+  app.component(MdApp.name, MdApp)
+  app.component(MdAppToolbar.name, MdAppToolbar)
+  app.component(MdAppContent.name, MdAppContent)
+  app.component(MdAppDrawer.name, MdAppDrawer)
 }
+

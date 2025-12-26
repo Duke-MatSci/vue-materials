@@ -1,108 +1,92 @@
-<template>
-  <div class="md-badge-content" v-if="hasDefaultSlot">
-    <slot />
-    <md-badge-standalone :class="badgeClasses" :style="styles">
-      <div>
-        {{ mdContent }}
-      </div>
-    </md-badge-standalone>
-  </div>
-  <md-badge-standalone :class="badgeClasses" :style="styles" v-else>
-    {{ mdContent }}
-  </md-badge-standalone>
-</template>
-
 <script>
-	import { getCurrentInstance } from "vue";
-  import MdComponent from '@/core/MdComponent'
-  import MdPropValidator from '@/core/utils/MdPropValidator'
+import { h } from 'vue'
+import MdComponent from '@/core/MdComponent'
+import MdPropValidator from '@/core/utils/MdPropValidator'
+import MdBadgeStandalone from './MdBadgeStandalone.vue'
 
-  import MdBadgeStandalone from './MdBadgeStandalone.vue'
-
-  export default new MdComponent({
-		setup() {
-			
-
-			const instance = getCurrentInstance();
-			
-
-			return {
-				
-				instance
-				
-			}
-		},
-    name: 'MdBadge',
-    components: {
-      MdBadgeStandalone
+export default MdComponent({
+  name: 'MdBadge',
+  components: {
+    MdBadgeStandalone
+  },
+  props: {
+    mdContent: [String, Number],
+    mdPosition: {
+      type: String,
+      default: 'top',
+      ...MdPropValidator('md-position', [
+        'top',
+        'bottom'
+      ])
     },
-    props: {
-      mdContent: [String, Number],
-      mdPosition: {
-        type: String,
-        default: 'top',
-        ...MdPropValidator('md-position', [
-          'top',
-          'bottom'
-        ])
-      },
-      mdDense: Boolean
+    mdDense: Boolean
+  },
+  computed: {
+    hasDefaultSlot() {
+      return !!this.$slots.default
     },
-    computed: {
-      hasDefaultSlot () {
-        return !!this.$slots.default
-      },
-      badgeClasses () {
-        const staticClass = this.getStaticClass()
-        const dynamicClass = this.instance.attrs.class
+    badgeClasses() {
+      // In Vue 3, get classes from $attrs
+      const externalClass = this.$attrs.class || ''
+      const classArray = typeof externalClass === 'string'
+        ? externalClass.split(' ').filter(val => val)
+        : Array.isArray(externalClass) ? externalClass : [externalClass]
 
-        return {
-          ['md-position-' + this.mdPosition]: true,
-          'md-dense': this.mdDense,
-          ...staticClass,
-          ...dynamicClass
+      const classObj = classArray.reduce((result, key) => {
+        if (key && typeof key === 'string') {
+          result[key] = true
         }
-      },
-      styles () {
-        const staticStyle = this.instance.attrs.staticStyle
-        const style = this.instance.attrs.style
-        return {
-          ...staticStyle,
-          ...style
-        }
+        return result
+      }, {})
+
+      return {
+        ['md-position-' + this.mdPosition]: true,
+        'md-dense': this.mdDense,
+        ...classObj
       }
     },
-    methods: {
-      getStaticClass () {
-				
-        const staticClass = this.instance.attrs.class
-
-        function filterClasses () {
-          return staticClass.split(' ').filter(val => val).reduce((result, key) => {
-            result[key] = true
-            return result
-          }, {})
-        }
-
-        return staticClass ? filterClasses() : {}
-      }
+    styles() {
+      // In Vue 3, get styles from $attrs
+      return this.$attrs.style || {}
     }
-  })
+  },
+  render() {
+    const badgeStandalone = h(MdBadgeStandalone, {
+      class: this.badgeClasses,
+      style: this.styles
+    }, {
+      default: () => this.hasDefaultSlot
+        ? [h('div', {}, this.mdContent)]
+        : [this.mdContent]
+    })
+
+    if (this.hasDefaultSlot) {
+      return h('div', {
+        class: 'md-badge-content'
+      }, [
+        ...(this.$slots.default ? this.$slots.default() : []),
+        badgeStandalone
+      ])
+    }
+
+    return badgeStandalone
+  }
+})
 </script>
 
 <style lang="scss">
-  @import "@/components/MdAnimation/variables";
+@import "@/components/MdAnimation/variables";
 
-  .md-badge-content {
-    position: relative;
-    display: inline-block;
-    .md-position {
-      &-top {
-        top: -4px;
-      }
-      &-bottom {
-        bottom: -4px;
-      }
+.md-badge-content {
+  position: relative;
+  display: inline-block;
+  .md-position {
+    &-top {
+      top: -4px;
+    }
+    &-bottom {
+      bottom: -4px;
     }
   }
+}
 </style>

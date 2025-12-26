@@ -1,126 +1,177 @@
-<template>
-  <md-menu-item :class="optionClasses" :disabled="isDisabled" @click="setSelection">
-    <md-checkbox class="md-primary" v-model="isChecked" v-if="MdSelect.multiple" :disabled="isDisabled" />
-
-    <span class="md-list-item-text" ref="text">
-      <slot />
-    </span>
-  </md-menu-item>
-</template>
-
 <script>
-	
-  import MdUuid from '@/core/utils/MdUuid.js'
-	import MdCheckbox from "@/components/MdCheckbox/MdCheckbox.vue"
-	import MdMenuItem from "@/components/MdMenu/MdMenuItem.vue"
+import { h } from 'vue'
+import MdUuid from '@/core/utils/MdUuid'
+import MdMenuItem from '@/components/MdMenu/MdMenuItem.vue'
+import MdCheckbox from '@/components/MdCheckbox/MdCheckbox.vue'
 
-  export default {
-		
-		components: {
-			MdCheckbox,
-			MdMenuItem
-		},
-    name: 'MdOption',
-    props: {
-      value: [String, Number, Boolean],
-      disabled: Boolean
+export default {
+  name: 'MdOption',
+  components: {
+    MdMenuItem,
+    MdCheckbox
+  },
+  props: {
+    value: [String, Number, Boolean],
+    disabled: Boolean
+  },
+  inject: {
+    MdSelect: {
+      default: () => ({
+        items: {},
+        label: null,
+        multiple: false,
+        modelValue: null,
+        setValue: () => {},
+        setContent: () => {},
+        setMultipleValue: () => {},
+        setMultipleContent: () => {}
+      })
     },
-    inject: {
-      MdSelect: {},
-      MdOptgroup: {
-        default: {}
+    MdOptgroup: {
+      default: () => ({})
+    }
+  },
+  data: () => ({
+    uniqueId: 'md-option-' + MdUuid(),
+    isSelected: false,
+    isChecked: false
+  }),
+  computed: {
+    selectValue () {
+      return this.MdSelect.modelValue
+    },
+    isMultiple () {
+      return this.MdSelect.multiple
+    },
+    isDisabled () {
+      return this.MdOptgroup.disabled || this.disabled
+    },
+    key () {
+      let isSet = (this.value || this.value === 0 || this.value === false || this.value === '')
+      return isSet ? this.value : this.uniqueId
+    },
+    inputLabel () {
+      return this.MdSelect.label
+    },
+    optionClasses () {
+      return {
+        'md-selected': this.isSelected || this.isChecked
       }
+    }
+  },
+  watch: {
+    selectValue () {
+      this.setIsSelected()
     },
-    data: () => ({
-      uniqueId: 'md-option-' + MdUuid(),
-      isSelected: false,
-      isChecked: false
-    }),
-    computed: {
-      selectValue () {
-        return this.MdSelect.modelValue
-      },
-      isMultiple () {
-        return this.MdSelect.multiple
-      },
-      isDisabled () {
-        return this.MdOptgroup.disabled || this.disabled
-      },
-      key () {
-        let isSet = (this.value || this.value === 0 || this.value === false || this.value === '')
-        return isSet ? this.value : this.uniqueId
-      },
-      inputLabel () {
-        return this.MdSelect.label
-      },
-      optionClasses () {
-        return {
-          'md-selected': this.isSelected || this.isChecked
-        }
+    isChecked (val) {
+      if (val === this.isSelected) {
+        return
       }
+      // Update selection when checkbox value changes (from checkbox click)
+      this.setSelection()
     },
-    watch: {
-      selectValue () {
-        this.setIsSelected()
-      },
-      isChecked (val) {
-        if (val === this.isSelected) {
-          return
-        }
-        this.setSelection()
-      },
-      isSelected (val) {
-        this.isChecked = val
+    isSelected (val) {
+      this.isChecked = val
+    }
+  },
+  methods: {
+    getTextContent () {
+      if (this.$el) {
+        return this.$el.textContent.trim()
       }
-    },
-    methods: {
-      getTextContent () {
-        if (this.$el) {
-          return this.$el.textContent.trim()
-        }
 
-        const slot = this.$slots.default()
-	
-        return slot[0] ? slot[0].children.trim() : ''
-      },
-      setIsSelected () {
-        if (!this.isMultiple) {
-          this.isSelected = this.selectValue === this.value
-          return
-        }
-        if (this.selectValue === undefined) {
-          this.isSelected = false
-          return
-        }
-        this.isSelected = this.selectValue.includes(this.value)
-      },
-      setSingleSelection () {
-        this.MdSelect.setValue(this.value)
-      },
-      setMultipleSelection () {
-        this.MdSelect.setMultipleValue(this.value)
-      },
-      setSelection () {
-				
-        if (!this.isDisabled) {
-          if (this.isMultiple) {
-            this.setMultipleSelection()
-          } else {
-            this.setSingleSelection()
+      const slot = this.$slots.default
+
+      if (slot) {
+        const vnodes = slot()
+        if (vnodes && vnodes.length > 0) {
+          const firstVNode = vnodes[0]
+          if (typeof firstVNode.children === 'string') {
+            return firstVNode.children.trim()
           }
         }
-      },
-      setItem () {
-				this.MdSelect.items[this.key] = this.getTextContent();
+      }
+
+      return ''
+    },
+    setIsSelected () {
+      if (!this.isMultiple) {
+        this.isSelected = this.selectValue === this.value
+        return
+      }
+      if (this.selectValue === undefined) {
+        this.isSelected = false
+        return
+      }
+      this.isSelected = this.selectValue.includes(this.value)
+    },
+    setSingleSelection () {
+      this.MdSelect.setValue(this.value)
+    },
+    setMultipleSelection () {
+      this.MdSelect.setMultipleValue(this.value)
+    },
+    setSelection () {
+      if (!this.isDisabled) {
+        if (this.isMultiple) {
+          this.setMultipleSelection()
+        } else {
+          this.setSingleSelection()
+        }
       }
     },
-    vnodeUpdated () {
-      this.setItem()
-    },
-    created () {
-      this.setItem()
-      this.setIsSelected()
+    setItem () {
+      this.MdSelect.items[this.key] = this.getTextContent()
     }
+  },
+  updated () {
+    this.setItem()
+  },
+  created () {
+    this._textRef = null
+    this.setItem()
+    this.setIsSelected()
+  },
+  render() {
+    const menuItemProps = {
+      class: this.optionClasses,
+      disabled: this.isDisabled
+    }
+
+    // Only add onClick for single select - multiple select uses checkbox clicks
+    if (!this.isMultiple) {
+      menuItemProps.onClick = this.setSelection
+    }
+
+    return h(MdMenuItem, menuItemProps, () => {
+      const children = []
+
+      if (this.MdSelect.multiple) {
+        children.push(
+          h(MdCheckbox, {
+            class: 'md-primary',
+            modelValue: this.isChecked,
+            'onUpdate:modelValue': (val) => { this.isChecked = val },
+            disabled: this.isDisabled,
+            trueValue: true,
+            falseValue: false
+          })
+        )
+      }
+
+      children.push(
+        h('span', {
+          class: 'md-list-item-text',
+          ref: (el) => { this._textRef = el }
+        }, this.$slots.default ? this.$slots.default() : [])
+      )
+
+      return children
+    })
   }
+}
 </script>
 
+<style lang="scss">
+
+</style>

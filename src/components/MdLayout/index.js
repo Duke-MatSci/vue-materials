@@ -1,5 +1,5 @@
-import './layout.scss'
+import "./layout.scss"
 
-export default Vue => {
-
+export default (app) => {
+	// MdLayout is a utility component, no registration needed
 }

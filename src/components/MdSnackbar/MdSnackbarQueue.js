@@ -12,11 +12,10 @@ function createPromise(duration, persistent, context) {
 
 		if (duration !== Infinity) {
 			timeout = window.setTimeout(() => {
-				destroySnackbar()
-				if (!persistent) {
-					// Vue 3 adaptation: component will auto-destroy when mdActive becomes false
-					// The component lifecycle is handled by the parent's reactivity system
+				if (!persistent && typeof context.__startLeave === "function") {
+					context.__startLeave()
 				}
+				destroySnackbar()
 			}, duration)
 		}
 	})
@@ -36,10 +35,9 @@ export const destroySnackbar = () => {
 
 export const createSnackbar = (duration, persistent, context) => {
 	if (currentSnackbar) {
-		return destroySnackbar().then(() => {
-			return createPromise(duration, persistent, context)
-		})
+		return destroySnackbar().then(() =>
+			createPromise(duration, persistent, context)
+		)
 	}
-
 	return createPromise(duration, persistent, context)
 }

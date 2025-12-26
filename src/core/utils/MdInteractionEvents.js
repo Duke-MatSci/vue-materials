@@ -1,6 +1,10 @@
 export default [
-  'click',
-  'dblclick',
-  'mousedown',
-  'mouseup'
+	"click",
+	"onClick",
+	"onDoubleClick",
+	"dblclick",
+	"onMouseDown",
+	"mousedown",
+	"onMouseUp",
+	"mouseup",
 ]

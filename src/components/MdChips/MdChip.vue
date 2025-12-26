@@ -1,60 +1,105 @@
-<template>
-  <transition name="md-chip" appear>
-    <div class="md-chip" :class="[$mdActiveTheme, chipClasses]" tabindex="0" >
-      <md-ripple :md-disabled="mdDisabled" v-if="mdClickable || !mdRipple">
-        <slot />
-      </md-ripple>
-
-      <slot v-else />
-
-      <transition name="md-input-action" appear>
-        <md-button tabindex="-1" class="md-icon-button md-dense md-input-action md-clear" v-if="mdDeletable" @click="$emit('md-delete', $event)">
-          <md-clear-icon />
-        </md-button>
-      </transition>
-    </div>
-  </transition>
-</template>
-
 <script>
-  import MdComponent from '@/core/MdComponent'
-  import MdFocused from '@/core/mixins/MdFocused/MdFocused'
-  import MdRipple from '@/core/mixins/MdRipple/MdRipple'
-  import MdClearIcon from '@/core/icons/MdClearIcon.vue'
-  import MdButton from '@/components/MdButton/MdButton.vue'
+import { h, Transition } from 'vue'
+import MdComponent from '@/core/MdComponent'
+import MdFocused from '@/core/mixins/MdFocused/MdFocused'
+import MdRippleMixin from '@/core/mixins/MdRipple/MdRipple'
+import MdRipple from '@/components/MdRipple/MdRipple.vue'
+import MdClearIcon from '@/core/icons/MdClearIcon.vue'
+import MdButton from '@/components/MdButton/MdButton.vue'
 
-  export default new MdComponent({
-    name: 'MdChip',
-		emits:['md-delete'],
-    components: {
-      MdButton,
-      MdClearIcon
-    },
-    mixins: [
-      MdFocused,
-      MdRipple
-    ],
-    props: {
-      mdDisabled: Boolean,
-      mdDeletable: Boolean,
-      mdClickable: Boolean,
-      mdDuplicated: {
-        type: Boolean,
-        default: false
-      }
-    },
-    computed: {
-      chipClasses () {
-        return {
-          'md-disabled': this.mdDisabled,
-          'md-deletable': this.mdDeletable,
-          'md-clickable': this.mdClickable,
-          'md-focused': this.mdHasFocus,
-          'md-duplicated': this.mdDuplicated
-        }
+export default MdComponent({
+  name: 'MdChip',
+  components: {
+    MdButton,
+    MdClearIcon,
+    MdRipple
+  },
+  mixins: [
+    MdFocused,
+    MdRippleMixin
+  ],
+  props: {
+    mdDisabled: Boolean,
+    mdDeletable: Boolean,
+    mdClickable: Boolean,
+    mdDuplicated: {
+      type: Boolean,
+      default: false
+    }
+  },
+  computed: {
+    chipClasses () {
+      return {
+        'md-disabled': this.mdDisabled,
+        'md-deletable': this.mdDeletable,
+        'md-clickable': this.mdClickable,
+        'md-focused': this.mdHasFocus,
+        'md-duplicated': this.mdDuplicated
       }
     }
-  })
+  },
+  render() {
+    // Inner div content: ripple wrapper or plain slot
+    const innerContent = []
+
+    if (this.mdClickable || !this.mdRipple) {
+      // Wrap slot in MdRipple
+      innerContent.push(
+        h(this.$options.components.MdRipple, {
+          mdDisabled: this.mdDisabled
+        }, {
+          default: () => this.$slots.default ? this.$slots.default() : []
+        })
+      )
+    } else {
+      // Plain slot
+      if (this.$slots.default) {
+        innerContent.push(...this.$slots.default())
+      }
+    }
+
+    // Delete button with transition
+    if (this.mdDeletable) {
+      innerContent.push(
+        h(Transition, {
+          name: 'md-input-action',
+          appear: true
+        }, {
+          default: () => [
+            h(this.$options.components.MdButton, {
+              tabindex: -1,
+              class: 'md-icon-button md-dense md-input-action md-clear',
+              onClick: (event) => {
+                this.$emit('md-delete', event)
+              }
+            }, {
+              default: () => [
+                h(this.$options.components.MdClearIcon)
+              ]
+            })
+          ]
+        })
+      )
+    }
+
+    // Main chip div
+    // Extract class from $attrs to avoid it being overwritten when spreading
+    const { class: customClass, ...otherAttrs } = this.$attrs
+    const chipDiv = h('div', {
+      class: ['md-chip', this.$mdActiveTheme, this.chipClasses, customClass],
+      tabindex: 0,
+      ...otherAttrs
+    }, innerContent)
+
+    // Wrap in outer transition
+    return h(Transition, {
+      name: 'md-chip',
+      appear: true
+    }, {
+      default: () => [chipDiv]
+    })
+  }
+})
 </script>
 
 <style lang="scss">

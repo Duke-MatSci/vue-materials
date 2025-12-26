@@ -1,89 +1,171 @@
-<template>
-  <md-list-item class="md-menu-item" v-bind="$attrs" :class="[itemClasses, $mdActiveTheme]" :disabled="disabled" :tabindex="highlighted && -1" v-on:click="closeMenu()">
-    <slot />
-  </md-list-item>
-</template>
-
 <script>
-  import MdComponent from '@/core/MdComponent'
-  
-	import MdListItem from '@/components/MdList/MdListItem/MdListItem.vue'
+import { h, mergeProps } from "vue"
+import MdComponent from "@/core/MdComponent"
+import MdInteractionEvents from "@/core/utils/MdInteractionEvents"
+import MdListItem from "@/components/MdList/MdListItem/MdListItem.vue"
 
-  export default new MdComponent({
-		components: {
-			MdListItem
-		},
-    name: 'MdMenuItem',
-    props: {
-      disabled: Boolean
+export default MdComponent({
+  name: "MdMenuItem",
+  components: { MdListItem },
+  props: {
+    disabled: Boolean,
+  },
+  inject: ["MdMenu"],
+  data: () => ({
+    highlighted: false,
+    containerEl: null,
+    anchorListener: null,
+  }),
+  computed: {
+    itemClasses() {
+      return {
+        "md-highlight": this.highlighted,
+      }
     },
-    inject: ['MdMenu'],
-    data: () => ({
-      highlighted: false
-    }),
-    computed: {
-      itemClasses () {
-        return {
-          'md-highlight': this.highlighted
+  },
+  methods: {
+    splitAttrs() {
+      const attrs = this.$attrs || {}
+      const events = {}
+      const nonEvents = {}
+      Object.keys(attrs).forEach((key) => {
+        const value = attrs[key]
+        if (key.startsWith("on") && typeof value === "function") {
+          events[key] = value
+        } else {
+          nonEvents[key] = value
         }
-      },
-			/*
-      listeners () {
-        if (this.disabled) {
-          return {}
-        }
-				
-        if (!this.MdMenu.closeOnSelect) {
-          return this.$listeners ? 
-        }
-
-        let listeners = {}
-        let listenerNames = Object.keys(this.$listeners)
-
-        listenerNames.forEach(listener => {
-          if (MdInteractionEvents.includes(listener)) {
-            listeners[listener] = $event => {
-              this.$listeners[listener]($event)
-              this.closeMenu()
-            }
-          } else {
-            listeners[listener] = this.$listeners[listener]
-          }
-        })
-
-        return listeners
-      }*/
+      })
+      return { events, attrs: nonEvents }
     },
-    methods: {
-      closeMenu () {
-        this.MdMenu.active = false
+    getEventName(key) {
+      if (key.startsWith("on") && key.length > 2) {
+        const lower = key.slice(2)
+        return lower.charAt(0).toLowerCase() + lower.slice(1)
+      }
+      return key
+    },
+    closeMenu() {
+      if (!this.MdMenu) return
+      this.MdMenu.active = false
+      if (this.MdMenu.bodyClickObserver && this.MdMenu.bodyClickObserver.destroy) {
+        this.MdMenu.bodyClickObserver.destroy()
+        this.MdMenu.bodyClickObserver = null
+      }
+    },
+    triggerCloseMenu() {
+      if (!this.disabled) {
+        this.closeMenu()
+      }
+    },
+    setHighlighted(state) {
+      this.highlighted = !!state
+    },
+    getContainer() {
+      return this.containerEl
+    },
+    isHighlightable() {
+      const container = this.containerEl
+      if (!container) return false
+      if (container.classList.contains("md-list-item-default")) return false
+      if (container.hasAttribute("disabled")) return false
+      return true
+    },
+    triggerClick() {
+      if (this.containerEl) {
+        this.containerEl.click()
+      }
+    },
+    registerItem() {
+      if (this.MdMenu && typeof this.MdMenu.registerItem === "function") {
+        this.MdMenu.registerItem(this)
+      }
+    },
+    unregisterItem() {
+      if (this.MdMenu && typeof this.MdMenu.unregisterItem === "function") {
+        this.MdMenu.unregisterItem(this)
+      }
+    },
+    setupAnchorListener() {
+      const root = this.$el
+      if (!root || !root.children || !root.children[0]) return
+      const element = root.children[0]
+      if (element.tagName && element.tagName.toUpperCase() === "A") {
+        const handler = () => this.triggerCloseMenu()
+        element.addEventListener("click", handler)
+        this.anchorListener = { element, handler }
+      }
+    },
+    teardownAnchorListener() {
+      if (this.anchorListener && this.anchorListener.element) {
+        this.anchorListener.element.removeEventListener("click", this.anchorListener.handler)
+      }
+      this.anchorListener = null
+    },
+  },
+  mounted() {
+    this.$nextTick(() => {
+      if (this.$el && this.$el.querySelector) {
+        this.containerEl = this.$el.querySelector(".md-list-item-container")
+      }
+      this.registerItem()
+      this.setupAnchorListener()
+    })
+  },
+  beforeUnmount() {
+    this.teardownAnchorListener()
+    this.unregisterItem()
+  },
+  render() {
+    const { events, attrs } = this.splitAttrs()
+    const listeners = {}
 
-        if (this.MdMenu.eventObserver) {
-          this.MdMenu.eventObserver.destroy()
-        }
-      },
-
-      triggerCloseMenu () {
-        if (!this.disabled) {
+    Object.keys(events).forEach((key) => {
+      const handler = events[key]
+      if (this.disabled) {
+        listeners[key] = handler
+        return
+      }
+      const eventName = this.getEventName(key)
+      const lower = eventName.toLowerCase()
+      const shouldClose =
+        MdInteractionEvents.includes(key) ||
+        MdInteractionEvents.includes(eventName) ||
+        MdInteractionEvents.includes(lower)
+      if (this.MdMenu && this.MdMenu.closeOnSelect && shouldClose) {
+        listeners[key] = (...args) => {
+          handler(...args)
           this.closeMenu()
         }
+      } else {
+        listeners[key] = handler
       }
-    },
-    mounted () {
-      if (this.$el.children && this.$el.children[0]) {
-        let listItem = this.$el.children[0]
+    })
 
-        if (listItem.tagName.toUpperCase() === 'A') {
-          this.$el.addEventListener('click', this.triggerCloseMenu)
-        }
-      }
-    },
-
-    unmounted () {
-			if(this.$el) {
-				//console.log('LSLS')
-      	this.$el.removeEventListener('click', this.triggerCloseMenu)
-			}
+    const tabIndex = this.highlighted ? -1 : attrs.tabindex
+    if (tabIndex !== undefined) {
+      delete attrs.tabindex
     }
-  })
+
+    return h(
+      MdListItem,
+      mergeProps(
+        {
+          class: ["md-menu-item", this.itemClasses, this.$mdActiveTheme],
+          disabled: this.disabled,
+          tabindex: tabIndex,
+        },
+        attrs,
+        listeners
+      ),
+      {
+        default: () => (this.$slots.default ? this.$slots.default() : []),
+      }
+    )
+  },
+})
 </script>
+
+<style lang="scss">
+/* styling covered by theme */
+</style>

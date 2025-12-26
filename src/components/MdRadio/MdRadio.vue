@@ -1,78 +1,106 @@
-<template>
-  <div class="md-radio" :class="[$mdActiveTheme, radioClasses]">
-    <div class="md-radio-container" @click.stop="toggleCheck">
-      <md-ripple md-centered v-bind:mdActive="rippleActive" >
-        <input type="radio" v-bind="{ id, name, disabled, required, value, checked: isSelected }" v-bind:checked="isSelected">
-      </md-ripple>
-    </div>
-
-    <label :for="id" class="md-radio-label" v-if="$slots.default" @click.prevent="toggleCheck">
-      <slot />
-    </label>
-  </div>
-</template>
-
 <script>
-  import MdComponent from '@/core/MdComponent'
-  import MdUuid from '@/core/utils/MdUuid'
-  import MdRipple from '@/components/MdRipple/MdRipple.vue'
+import { h } from 'vue'
+import MdComponent from '@/core/MdComponent'
+import MdUuid from '@/core/utils/MdUuid'
+import MdRipple from '@/components/MdRipple/MdRipple.vue'
 
-  export default new MdComponent({
-		
-    name: 'MdRadio',
-    components: {
-      MdRipple
+export default MdComponent({
+  name: 'MdRadio',
+  components: {
+    MdRipple
+  },
+  props: {
+    modelValue: [String, Number, Boolean, Object],
+    value: {
+      type: [String, Number, Boolean, Object],
+      default: 'on'
     },
-		
-		emits:['change','update:modelValue'],
-    props: {
-      model: [String, Number, Boolean, Object],
-      value: {
-        type: [String, Number, Boolean, Object],
-        default: 'on'
-      },
-      id: {
-        type: String,
-        default: () => 'md-radio-' + MdUuid()
-      },
-      name: [String, Number],
-      required: Boolean,
-      disabled: Boolean,
-			modelValue:false
+    id: {
+      type: String,
+      default: () => 'md-radio-' + MdUuid()
     },
-    model: {
-      prop: 'model',
-      event: 'change'
+    name: [String, Number],
+    required: Boolean,
+    disabled: Boolean
+  },
+  data: () => ({
+    rippleActive: false
+  }),
+  computed: {
+    isSelected () {
+      return this.modelValue === this.value
     },
-    data: () => ({
-      rippleActive: false
-    }),
-    computed: {
-      isSelected () {
-        return this.modelValue === this.value
-      },
-      radioClasses () {
-        return {
-          'md-checked': this.isSelected,
-          'md-disabled': this.disabled,
-          'md-required': this.required
-        }
-      }
-    },
-    methods: {
-      toggleCheck () {
-        if (!this.disabled) {
-          this.rippleActive = true
-          this.$emit('change', this.value)
-					this.$emit('update:modelValue', this.value)
-					var _this = this;
-					this.$nextTick(function(){
-						_this.rippleActive = false
-					});
-        }
+    radioClasses () {
+      return {
+        'md-checked': this.isSelected,
+        'md-disabled': this.disabled,
+        'md-required': this.required
       }
     }
-  })
+  },
+  methods: {
+    toggleCheck () {
+      if (!this.disabled) {
+        this.rippleActive = true
+        this.$emit('update:modelValue', this.value)
+      }
+    }
+  },
+  render() {
+    const children = []
+
+    // Container div with ripple and input
+    children.push(
+      h('div', {
+        class: 'md-radio-container',
+        onClick: (e) => {
+          e.stopPropagation()
+          this.toggleCheck()
+        }
+      }, [
+        h(this.$options.components.MdRipple, {
+          mdCentered: true,
+          mdActive: this.rippleActive,
+          'onUpdate:mdActive': (val) => {
+            this.rippleActive = val
+          },
+          mdDisabled: this.disabled
+        }, {
+          default: () => [
+            h('input', {
+              type: 'radio',
+              id: this.id,
+              name: this.name,
+              disabled: this.disabled,
+              required: this.required,
+              value: this.value,
+              checked: this.isSelected
+            })
+          ]
+        })
+      ])
+    )
+
+    // Optional label with slot
+    if (this.$slots.default) {
+      children.push(
+        h('label', {
+          for: this.id,
+          class: 'md-radio-label',
+          onClick: (e) => {
+            e.preventDefault()
+            this.toggleCheck()
+          }
+        }, this.$slots.default())
+      )
+    }
+
+    // Root div
+    return h('div', {
+      class: ['md-radio', this.$mdActiveTheme, this.radioClasses]
+    }, children)
+  }
+})
 </script>
 
 <style lang="scss">

@@ -1,505 +1,473 @@
-<template>
-  <md-menu
-    class="md-select"
-    :class="{ 'md-disabled': disabled }"
-    :md-close-on-select="false"
-
-    
-		v-model:mdActive="showSelect"
-    :md-offset-x="offset.x"
-    :md-offset-y="offset.y"
-    :md-dense="mdDense"
-		
-    @mdClosed="onClose"
-		>
-    <md-input
-      class="md-input md-select-value"
-      v-model="MdSelect.label"
-			
-      ref="input"
-      readonly
-      :disabled="disabled"
-      :required="required"
-      :placeholder="placeholder"
-      v-on="inputListeners"
-			
-			
-			
-      @focus.prevent="onFocus"
-      @blur.prevent="removeHighlight"
-      @click="openSelect"
-      @keydown.down="openSelect"
-      @keydown.enter="openSelect"
-      @keydown.space="openSelect"  />
-    <md-drop-down-icon @click="openSelect" />
-
-    
-			<md-menu-content
-				ref="menu"
-				class="md-select-menu "
-				:class="!showSelect ? 'hide':''"
-				:md-content-class="mdClass"
-				:listenTyping="true"
-				:id="id"
-				:show="showSelect"
-				:style="menuStyles"
-				
-				@setParentOffsets="setOffsets"
-				@enter="onMenuEnter">
-				
-				
-				<md-option v-for="(option, index) in dropdown_options_parsed" v-if="showSelect"
-					:key="index"
-					:value="index">{{option}}
-				</md-option>
-			</md-menu-content>
-		
-   
-
-   
-
-    <input class="md-input-fake" v-model="model" :disabled="disabled" readonly tabindex="-1" />
-    <select readonly v-model="model" v-bind="attributes" tabindex="-1" ></select>
-  </md-menu>
-</template>
-
 <script>
-  import localConfig  from '@localconfig/config.json';
+import { h, KeepAlive } from "vue"
+import MdDropDownIcon from "@/core/icons/MdDropDownIcon.vue"
+import MdMenu from "@/components/MdMenu/MdMenu.vue"
+import MdMenuContent from "@/components/MdMenu/MdMenuContent.vue"
+import MdInput from "../MdInput/MdInput.vue"
+import MdFieldMixin from "../MdFieldMixin"
 
-  import MdDropDownIcon from '@/core/icons/MdDropDownIcon.vue'
-  import MdMenu from '@/components/MdMenu/MdMenu.vue'
-  import MdMenuContent from '@/components/MdMenu/MdMenuContent.vue'
-  import MdInput from '../MdInput/MdInput.vue'
-  import MdFieldMixin from '../MdFieldMixin'
-	import MdOption from "@/components/MdField/MdSelect/MdOption.vue"
+const defaultOffset = {
+	x: -15,
+	y: -48,
+}
 
+export default {
+	name: "MdSelect",
+	components: {
+		MdInput,
+		MdMenu,
+		MdMenuContent,
+		MdDropDownIcon,
+	},
+	mixins: [MdFieldMixin],
+	props: {
+		mdDense: Boolean,
+		mdClass: String,
+		multiple: Boolean,
+		id: String,
+		name: String,
+	},
+	data() {
+		return {
+			menuStyles: {},
+			offset: {
+				x: defaultOffset.x,
+				y: 0,
+			},
+			showSelect: true,
+			didMount: false,
+			wasOpened: false,
+			selectLabel: null, // Reactive label for the input
+			MdSelect: {
+				items: {},
+				label: null,
+				multiple: false, // Will be set in created() before child components render
+				modelValue: this.localValue,
+				// Methods will be assigned in created()
+				setValue: null,
+				setContent: null,
+				setMultipleValue: null,
+				setMultipleContent: null,
+			},
+		}
+	},
+	provide() {
+		const MdSelect = this.MdSelect
 
-  const defaultOffset = {
-    x: -15,
-    y: -48
-  }
+		return { MdSelect }
+	},
+	created() {
+		// Initialize multiple BEFORE child components are created
+		this.MdSelect.multiple = this.multiple
 
-  export default {
-    name: 'MdSelect',
-		emits:['md-closed','md-selected','md-opened'],
-    components: {
-      MdInput,
-      MdMenu,
-      MdMenuContent,
-      MdDropDownIcon,
-			MdOption
-    },
-    mixins: [MdFieldMixin],
-    props: {
-      mdDense: Boolean,
-      mdClass: String,
-      multiple: Boolean,
-      id: String,
-      name: String,
-			modelValue:false,
-			dropdown_options:Object
-    },
-    inject: ['MdField'],
-    data () {
-      return {
-        menuStyles: {},
-        offset: {
-          x: defaultOffset.x,
-          y: 0
-        },
-        showSelect: false,
-				avoidLocalValueWatch:false,
-				//removeHighlightshowSelectTimeout:false,
-        didMount: false,
-        MdSelect: {
-          items: {},
-          label: null,
-          multiple: false,
-          modelValue: this.localValue,
-          setValue: this.setValue,
-          setContent: this.setContent,
-          setMultipleValue: this.setMultipleValue,
-          setMultipleContent: this.setMultipleContent
-        }
-				
-				
-      }
-    },
-    provide () {
-      const MdSelect = this.MdSelect
+		// Bind methods to MdSelect object so options can call them
+		this.MdSelect.setValue = this.setValue
+		this.MdSelect.setContent = this.setContent
+		this.MdSelect.setMultipleValue = this.setMultipleValue
+		this.MdSelect.setMultipleContent = this.setMultipleContent
+	},
+	computed: {
+		attrs() {
+			// Filter out onUpdate:modelValue to prevent MdInput from emitting back to parent
+			const { 'onUpdate:modelValue': _, ...filteredAttrs } = this.$attrs
+			return {
+				...filteredAttrs,
+				name: this.name,
+				id: undefined,
+			}
+		},
+	},
+	watch: {
+		localValue: {
+			immediate: true,
+			handler(val) {
+				// Set MdField.value
+				const hasValue = val !== undefined && val !== null && val !== ''
+				this.MdField.value = hasValue ? val : null
 
-      return { MdSelect }
-    },
-    computed: {
-			dropdown_options_parsed (){
-				if(localConfig.debugMd && !localConfig.prod) {
-					var ret = {};
-					var tot = 0;
-					for (const key in this.dropdown_options) {
-						if (Object.hasOwnProperty.call(this.dropdown_options, key)) {
-							ret[key] = this.dropdown_options[key];
-							tot++;
-							if(tot>=6) {
-								break;
-							}
-							
+				// Only do DOM manipulation if component is mounted
+				if (this.didMount) {
+					this.updateFieldValue(val)
+				}
+
+				this.setFieldContent()
+				this.MdSelect.modelValue = this.localValue
+
+				if (this.didMount) {
+					this.emitSelected(val)
+				}
+			},
+		},
+		multiple: {
+			immediate: true,
+			handler(isMultiple) {
+				this.MdSelect.multiple = isMultiple
+				this.$nextTick(this.initialLocalValueByDefault)
+			},
+		},
+	},
+	methods: {
+		updateFieldValue(val) {
+			// Set MdField.value for other purposes
+			const hasValue = val !== undefined && val !== null && val !== ''
+			this.MdField.value = hasValue ? val : null
+
+			// Directly manipulate the DOM to add/remove md-has-value class
+			// This works around Vue 3 reactivity issues with provide/inject
+			const mdFieldEl = this.$el?.closest?.('.md-field')
+			if (mdFieldEl) {
+				if (hasValue) {
+					mdFieldEl.classList.add('md-has-value')
+				} else {
+					mdFieldEl.classList.remove('md-has-value')
+				}
+			}
+		},
+		elHasScroll(el) {
+			return el.scrollHeight > el.offsetHeight
+		},
+		scrollToSelectedOption(el, menu) {
+			const top = el.offsetTop
+			const elHeight = el.offsetHeight
+			const menuHeight = menu.offsetHeight
+
+			menu.scrollTop = top - (menuHeight - elHeight) / 2
+		},
+		setOffsets(target) {
+			if (!this.$isServer) {
+				// Find the menu content container using querySelector
+				const menuContent = this.$el?.querySelector('.md-menu-content.md-select-menu')
+				const menu = menuContent?.querySelector('.md-list')
+
+				if (menu) {
+					const selected = target || menu.querySelector(".md-selected")
+
+					if (selected) {
+						this.scrollToSelectedOption(selected, menu)
+						this.offset.y =
+							defaultOffset.y - selected.offsetTop + menu.scrollTop + 8
+						this.menuStyles = {
+							"transform-origin": `0 ${Math.abs(this.offset.y)}px`,
 						}
+					} else {
+						this.offset.y = defaultOffset.y + 1
+						this.menuStyles = {}
 					}
-					return ret;
-
-				} else  {
-					return this.dropdown_options;
 				}
-			},
-      attrs () {
-        return {
-          ...this.$attrs,
-          name: this.name,
-          id: undefined
-        }
-      },
-      inputListeners () {
-        return {
-          //...this.$listeners,
-          input: undefined
-        }
-      }
-    },
-    watch: {
-			dropdown_options_parsed(value){
-				//console.log(value);
-				var _this = this;
-				this.$nextTick(()=>{
-					_this.setFieldContent()
-					_this.MdSelect.modelValue = _this.modelValue
-					
-					var textContent = _this.dropdown_options[_this.modelValue];
-					
-					
-					_this.setContent(textContent);
-					
-				});
-			},
-			modelValue(value){
-				
-				//console.log('local-> '+this.localValue);
-				//console.log('val-> '+value);
-				var settingEmpty = !this.localValue && !value;
-				var settingEmptyFromFull = this.localValue && !value;
-				if(this.localValue != value || settingEmpty) {
-					var _this = this;
-					this.$nextTick(()=>{
-						_this.setFieldContent()
-          	_this.MdSelect.modelValue = settingEmpty ? '' : value
-						
-						var textContent = settingEmpty ? '' : _this.dropdown_options[ value ];
-					
-						_this.setContent(textContent);
+			}
+		},
+		onMenuEnter() {
+			if (!this.didMount) {
+				return
+			}
 
-						if(settingEmpty ) {
-							if(settingEmptyFromFull) {
-								_this.avoidLocalValueWatch = true;
-							}
-							_this.localValue = "";
-							//console.log('emptyLocalValue-> '+_this.localValue);
-						}
-						
-					});
-					
-					
+			this.wasOpened = true
+			this.setOffsets()
+			this.MdField.focused = true
+			this.MdField.highlighted = true
+			this.$emit("md-opened")
+		},
+		applyHighlight() {
+			this.MdField.focused = false
+			this.MdField.highlighted = true
+			// Find the input element using querySelector
+			const inputEl = this.$el?.querySelector('.md-input')
+			if (inputEl) {
+				inputEl.focus()
+			}
+		},
+		onClose() {
+			this.$emit("md-closed")
+			if (this.didMount) {
+				this.applyHighlight()
+			}
+		},
+		onFocus() {
+			this.MdField.highlighted = true
+		},
+		removeHighlight() {
+			this.MdField.highlighted = false
+		},
+		openSelect() {
+			if (!this.disabled) {
+				this.showSelect = true
+			}
+		},
+		arrayAccessorRemove(arr, index) {
+			let before = arr.slice(0, index)
+			let after = arr.slice(index + 1, arr.length)
+			return before.concat(after)
+		},
+		toggleArrayValue(value) {
+			let index = this.localValue.indexOf(value)
+			let includes = index > -1
+			if (!includes) {
+				this.localValue = this.localValue.concat([value])
+			} else {
+				this.localValue = this.arrayAccessorRemove(this.localValue, index)
+			}
+		},
+		setValue(newValue) {
+			this.model = newValue
+			this.setFieldValue()
+			this.showSelect = false
+		},
+		setContent(newLabel) {
+			this.MdSelect.label = newLabel
+			this.selectLabel = newLabel // Update reactive label for input binding
+		},
+		setContentByValue() {
+			const textContent = this.MdSelect.items[this.localValue]
 
-          
-					//this.model = value;
-				} 
-				
-			
-			},
-			model (val) {
-			
-      	//console.log('watch model->'+val)
-				this.localValue = val
-				
-			
-    	},
-      localValue: {
-        immediate: true,
-        handler (val) {
-					//console.log('watch localValue->'+val)
-					if(val === undefined && this.MdSelect.modelValue === undefined) {
-						return false;
+			if (textContent) {
+				this.setContent(textContent)
+			} else {
+				this.setContent("")
+			}
+		},
+		setMultipleValue(value) {
+			const newValue = value
+			this.toggleArrayValue(newValue)
+			this.setFieldValue()
+		},
+		setMultipleContentByValue() {
+			if (!this.localValue || !Array.isArray(this.localValue)) {
+				this.initialLocalValueByDefault()
+			}
+
+			// Ensure localValue is an array after initialization
+			if (!Array.isArray(this.localValue)) {
+				return
+			}
+
+			let content = []
+
+			this.localValue.forEach((item) => {
+				const textContent = this.MdSelect.items[item]
+
+				if (textContent) {
+					content.push(textContent)
+				}
+			})
+
+			this.setContent(content.join(", "))
+		},
+		setFieldContent() {
+			if (this.multiple) {
+				this.setMultipleContentByValue()
+			} else {
+				this.setContentByValue()
+			}
+		},
+		isLocalValueSet() {
+			return this.localValue !== undefined && this.localValue !== null
+		},
+		setLocalValueIfMultiple() {
+			if (this.isLocalValueSet()) {
+				this.localValue = [this.localValue]
+			} else {
+				this.localValue = []
+			}
+		},
+		setLocalValueIfNotMultiple() {
+			if (this.localValue.length > 0) {
+				this.localValue = this.localValue[0]
+			} else {
+				this.localValue = null
+			}
+		},
+		initialLocalValueByDefault() {
+			let isArray = Array.isArray(this.localValue)
+
+			if (this.multiple && !isArray) {
+				this.setLocalValueIfMultiple()
+			} else if (!this.multiple && isArray) {
+				this.setLocalValueIfNotMultiple()
+			}
+		},
+		emitSelected(value) {
+			this.$emit("md-selected", value)
+		},
+		isInvalidValue() {
+			// Find the hidden select element using querySelector
+			const selectEl = this.$el?.querySelector('select')
+			return selectEl && selectEl.validity
+				? selectEl.validity.badInput
+				: false
+		},
+	},
+	mounted() {
+		this.showSelect = false
+		this.MdField.select = true
+		this.setFieldContent()
+
+		this.$nextTick().then(() => {
+			// Call setFieldValue after component is fully mounted
+			this.setFieldValue()
+			this.didMount = true
+			// Also update field value to ensure DOM classes are set after mount
+			this.updateFieldValue(this.localValue)
+		})
+	},
+	updated() {
+		// Ensure field content is up to date
+		this.setFieldContent()
+	},
+	render() {
+		const children = []
+
+		// MdInput with proper attribute and event binding order
+		children.push(
+			h(this.$options.components.MdInput, {
+				...this.attrs,
+				class: "md-input md-select-value",
+				modelValue: this.selectLabel,
+				readonly: true,
+				disabled: this.disabled,
+				required: this.required,
+				placeholder: this.placeholder,
+				onFocus: (e) => {
+					e.preventDefault()
+					this.onFocus()
+				},
+				onBlur: (e) => {
+					e.preventDefault()
+					// Don't remove highlight for selects - it should persist
+				},
+				onClick: this.openSelect,
+				onKeydown: (e) => {
+					if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
+						this.openSelect()
 					}
-          this.setFieldContent()
-					//console.log('watch localValue mv->'+this.MdSelect.modelValue)
-					//console.log('watch localValue lv->'+this.localValue)
-          this.MdSelect.modelValue = this.localValue
+				},
+			})
+		)
 
-          if (this.didMount) {
-            this.emitSelected(val)
-          }
-        }
-      },
-      multiple: {
-        immediate: true,
-        handler (isMultiple) {
-          this.MdSelect.multiple = isMultiple
-          this.$nextTick(this.initialLocalValueByDefault)
-        }
-      }
-    },
-    methods: {
-			
-      elHasScroll (el) {
-        return el.scrollHeight > el.offsetHeight
-      },
-      scrollToSelectedOption (el, menu) {
-        const top = el.offsetTop
-        const elHeight = el.offsetHeight
-        const menuHeight = menu.offsetHeight
+		// MdDropDownIcon
+		children.push(
+			h(this.$options.components.MdDropDownIcon, {
+				onClick: this.openSelect,
+			})
+		)
 
-        menu.scrollTop = top - ((menuHeight - elHeight) / 2)
-      },
-      setOffsets (target) {
-				
-        if (!this.$isServer) {
-          const menu = this.$refs.menu.$refs.container
+		// KeepAlive with MdMenuContent
+		children.push(
+			h(KeepAlive, {}, () => [
+				h(
+					this.$options.components.MdMenuContent,
+					{
+						class: "md-select-menu",
+						mdContentClass: this.mdClass,
+						style: this.menuStyles,
+						onEnter: this.onMenuEnter,
+					},
+					{
+						default: () =>
+							this.showSelect && this.$slots.default
+								? this.$slots.default()
+								: [],
+					}
+				),
+			])
+		)
 
-          if (menu) {
-            const selected = target || menu.querySelector('.md-selected')
-						
-            if (selected) {
-              this.scrollToSelectedOption(selected, menu)
-              this.offset.y = defaultOffset.y - selected.offsetTop + menu.scrollTop + 8
-              this.menuStyles = {
-                'transform-origin': `0 ${Math.abs(this.offset.y)}px`
-              }
-            } else {
-              this.offset.y = defaultOffset.y + 1
-              this.menuStyles = {}
-            }
-          }
-        }
-      },
-      onMenuEnter () {
-				
-        if (!this.didMount) {
-          return
-        }
+		// Hidden slot when not showing
+		if (!this.showSelect) {
+			children.push(
+				h(
+					"div",
+					{ style: { display: "none" } },
+					this.$slots.default ? this.$slots.default() : []
+				)
+			)
+		}
 
-        this.setOffsets()
-        this.MdField.focused = true
-        this.$emit('md-opened')
-      },
-      applyHighlight () {
-        this.MdField.focused = false
-        this.MdField.highlighted = true
-        this.$refs.input.$el.focus()
-      },
-      onClose () {
-        this.$emit('md-closed')
-				this.removeHighlight();
-        //if (this.didMount) {
-        //  this.applyHighlight()
-        //}
-      },
-      onFocus () {
-        if (this.didMount) {
-          this.applyHighlight()
-        }
-				if(!this.showSelect) {
-					this.openSelect();
-				}
-      },
-      removeHighlight () {
-				//console.log('hivhviviv')
-				//return false //TOGLI
-				this.MdField.focused = false
-        this.MdField.highlighted = false
-				/*
-				var _this = this;
-				if(this.removeHighlightshowSelectTimeout) {
-					clearTimeout(this.removeHighlightshowSelectTimeout);
-				}
-				this.removeHighlightshowSelectTimeout = setTimeout(function(){
-					nextTick(function(){
-						//_this.showSelect = false
-					});
-				},200)*/
-				
-				//
-      },
-      openSelect () {
-				
-        if (!this.disabled) {
-					//this.test();
-          this.showSelect = true
-        }
-      },
-      arrayAccessorRemove (arr, index) {
-        let before = arr.slice(0, index)
-        let after = arr.slice(index + 1, arr.length)
-        return before.concat(after)
-      },
-      toggleArrayValue (value) {
-        let index = this.localValue.indexOf(value)
-        let includes = index > -1
-        if (!includes) {
-          this.localValue = this.localValue.concat([value])
-        } else {
-          this.localValue = this.arrayAccessorRemove(this.localValue, index)
-        }
-      },
-      setValue (newValue) {
-				//console.log('setValue newvalue->'+newValue)
-				//console.log('setValue modelValu->'+this.modelValue)
-				//console.log('setValue localValue->'+this.localValue)
-				if(newValue == this.localValue && this.modelValue != newValue) {
-					this.localValue = "";
-				}
-				if(newValue != this.modelValue) {
-					this.model = newValue
-					//console.log('setValue model->'+this.model)
-					this.setFieldValue()
-					this.showSelect = false
-				}
-      },
-      setContent (newLabel) {
-        this.MdSelect.label = newLabel
-      },
-      setContentByValue () {
-				
-        const textContent = this.dropdown_options[this.localValue]
+		// Hidden fake inputs for form compatibility
+		children.push(
+			h("input", {
+				class: "md-input-fake",
+				value: this.model,
+				disabled: this.disabled,
+				readonly: true,
+				tabindex: -1,
+			})
+		)
 
-        if (textContent) {
-          this.setContent(textContent)
-        } else {
-          this.setContent('')
-        }
-      },
-      setMultipleValue (value) {
-        const newValue = value
-        this.toggleArrayValue(newValue)
-        this.setFieldValue()
-      },
-      setMultipleContentByValue () {
-        if (!this.localValue) {
-          this.initialLocalValueByDefault()
-        }
+		// Hidden select with proper attributes (excluding some attrs)
+		const selectAttrs = { ...this.attributes }
+		children.push(
+			h("select", {
+				readonly: true,
+				value: this.model,
+				...selectAttrs,
+				tabindex: -1,
+			})
+		)
 
-        let content = []
-
-        this.localValue.forEach(item => {
-          const textContent = this.MdSelect.items[item]
-
-          if (textContent) {
-            content.push(textContent)
-          }
-        })
-
-        this.setContent(content.join(', '))
-      },
-      setFieldContent () {
-        if (this.multiple) {
-          this.setMultipleContentByValue()
-        } else {
-          this.setContentByValue()
-        }
-      },
-      isLocalValueSet () {
-        return this.localValue !== undefined && this.localValue !== null
-      },
-      setLocalValueIfMultiple () {
-        if (this.isLocalValueSet()) {
-          this.localValue = [this.localValue]
-        } else {
-          this.localValue = []
-        }
-      },
-      setLocalValueIfNotMultiple () {
-        if (this.localValue.length > 0) {
-          this.localValue = this.localValue[0]
-        } else {
-          this.localValue = null
-        }
-      },
-      initialLocalValueByDefault () {
-        let isArray = Array.isArray(this.localValue)
-
-        if (this.multiple && !isArray) {
-          this.setLocalValueIfMultiple()
-        } else if (!this.multiple && isArray) {
-          this.setLocalValueIfNotMultiple()
-        }
-      },
-      emitSelected (value) {
-        this.$emit('md-selected', value)
-      }
-    },
-    mounted () {
-			
-      this.showSelect = false
-			this.localValue = this.modelValue;
-			
-      this.setFieldContent()
-
-      this.$nextTick().then(() => {
-        this.didMount = true
-      })
-    },
-    vnodeUpdated () {
-			//console.log('watch vnodeUpdated->'+val)
-		
-      this.setFieldContent()
-    }
-  }
+		return h(
+			this.$options.components.MdMenu,
+			{
+				class: { "md-select": true, "md-disabled": this.disabled },
+				mdCloseOnSelect: false,
+				mdCloseOnClick: false,
+				mdActive: this.showSelect,
+				"onUpdate:mdActive": (val) => {
+					this.showSelect = val
+				},
+				mdOffsetX: this.offset.x,
+				mdOffsetY: this.offset.y,
+				mdDense: this.mdDense,
+				onMdClosed: this.onClose,
+			},
+			() => children
+		)
+	},
+}
 </script>
 
 <style lang="scss">
-  @import "@/components/MdAnimation/variables";
+@import "@/components/MdAnimation/variables";
 
-  .md-menu.md-select {
-    display: flex;
-    flex: 1;
-    overflow: auto;
+.md-menu.md-select {
+	display: flex;
+	flex: 1;
+	overflow: auto;
 
-    &:not(.md-disabled) {
-      .md-input,
-      .md-icon {
-        cursor: pointer;
-        outline: none;
-      }
-    }
-
-    .md-input {
-      flex: 1;
-      min-width: 0;
-    }
-
-    select,
-    .md-input-fake {
-      width: 1px;
-      height: 1px;
-      margin: -1px;
-      padding: 0;
-      overflow: hidden;
-      position: absolute;
-      clip: rect(0 0 0 0);
-      border: 0;
-    }
-  }
-  .md-menu-content.md-select-menu {
-    z-index: 111;
-    width: 100%;
-
-    &.md-menu-content-enter {
-      transform: translate3d(0, -8px, 0) scaleY(.3);
-    }
-
-    .md-list {
-      transition: opacity .3s $md-transition-drop-timing;
-    }
-  }
-	.hide {
-		opacity:0;
-		pointer-events:none
+	&:not(.md-disabled) {
+		.md-input,
+		.md-icon {
+			cursor: pointer;
+			outline: none;
+		}
 	}
+
+	.md-input {
+		flex: 1;
+		min-width: 0;
+	}
+
+	select,
+	.md-input-fake {
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		overflow: hidden;
+		position: absolute;
+		clip: rect(0 0 0 0);
+		border: 0;
+	}
+}
+.md-menu-content.md-select-menu {
+	z-index: 111;
+	width: 100%;
+
+	&.md-menu-content-enter {
+		transform: translate3d(0, -8px, 0) scaleY(0.3);
+	}
+
+	.md-list {
+		transition: opacity 0.3s $md-transition-drop-timing;
+	}
+}
 </style>

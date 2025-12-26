@@ -1,15 +1,14 @@
 import MdRipple from '@/components/MdRipple/MdRipple.vue'
 
-
 export default {
-	emits:['update:modelValue'],
   components: {
     MdRipple
   },
   props: {
-    model: [String, Boolean, Object, Number, Array],
+    modelValue: [String, Boolean, Object, Number, Array],
     value: {
       type: [String, Boolean, Object, Number],
+      default: undefined
     },
     name: [String, Number],
     required: Boolean,
@@ -20,16 +19,10 @@ export default {
     },
     falseValue: {
       default: false
-    },
-		modelValue:false
-  },
-  model: {
-    prop: 'model',
-    event: 'change'
+    }
   },
   data: () => ({
-    rippleActive: false,
-		innervalue: false,
+    rippleActive: false
   }),
   computed: {
     attrs () {
@@ -41,61 +34,78 @@ export default {
         'true-value': this.trueValue,
         'false-value': this.falseValue
       }
-			attrs.modelValue = this.$attrs.modelValue;
-      
+
+      if (this.hasValue) {
+        if (this.value === null || typeof this.value !== 'object') {
+          attrs.value = (this.value === null || this.value === undefined) ? '' : String(this.value)
+        }
+      }
 
       return attrs
     },
-    
-    
+    isSelected () {
+      if (this.isModelArray) {
+        return this.modelValue.includes(this.value)
+      }
+
+      if (this.hasValue) {
+        return this.modelValue === this.value
+      }
+
+      return this.modelValue === this.trueValue
+    },
+    isModelArray () {
+      return Array.isArray(this.modelValue)
+    },
     checkClasses () {
       return {
-        'md-checked': this.innervalue,
+        'md-checked': this.isSelected,
         'md-disabled': this.disabled,
         'md-required': this.required,
         'md-indeterminate': this.indeterminate
       }
     },
-    
-  },
-	watch: {
-		modelValue(value){
-			var innerValue = this.innervalue === undefined ? false : this.innervalue;
-			var valueParsed = value === undefined ? false : value;
-			
-			if(innerValue != valueParsed) {
-				
-				this.toggleCheck();
-			}
-			
-		},
-	},
-  methods: {
-    
-    toggleCheck () {
-			
-      if (!this.disabled) {
-        this.rippleActive = true
-				
-        this.innervalue = !this.innervalue;
-      	this.$emit('update:modelValue', this.innervalue)
-				var _this = this;
-				this.$nextTick(function(){
-					if(_this.innervalue != _this.modelValue) {
-						_this.innervalue = _this.modelValue;
-					}
-					_this.rippleActive = false
-				});
-      }
+    hasValue () {
+      return this.$props.value !== undefined
     }
   },
-	mounted () {
-		
-		
-    this.innervalue = this.$attrs.modelValue
-		if(this.modelValue) {
-			
-			this.innervalue = true;
-		}
-  },
+  methods: {
+    removeItemFromModel (newModel) {
+      const index = newModel.indexOf(this.value)
+
+      if (index !== -1) {
+        newModel.splice(index, 1)
+      }
+    },
+    handleArrayCheckbox () {
+      const newModel = this.modelValue
+
+      if (!this.isSelected) {
+        newModel.push(this.value)
+      } else {
+        this.removeItemFromModel(newModel)
+      }
+
+      this.$emit('update:modelValue', newModel)
+    },
+    handleSingleSelectCheckbox () {
+      this.$emit('update:modelValue', this.isSelected ? null : this.value)
+    },
+    handleSimpleCheckbox () {
+      this.$emit('update:modelValue', this.isSelected ? this.falseValue : this.trueValue)
+    },
+    toggleCheck () {
+      if (!this.disabled) {
+        this.rippleActive = true
+
+        if (this.isModelArray) {
+          this.handleArrayCheckbox()
+        } else if (this.hasValue) {
+          this.handleSingleSelectCheckbox()
+        } else {
+          this.handleSimpleCheckbox()
+        }
+      }
+    }
+  }
 }

@@ -17,8 +17,8 @@
 		"skipLibCheck": true,
 		"noEmit": true
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "DO_NOT_USE"],
 	"exclude": ["node_modules", "src/main/App.vue", "src/main/main.js"],
 	"outDir": "dist",
-	"declaration": true,
+	"declaration": true
 }
